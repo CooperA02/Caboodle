@@ -1,24 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
-import Header from '../Components/header';
-import Footer from '../Components/footer';
+import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
+import Header from '../Components/header'; // Import Header component
+import Footer from '../Components/footer'; // Import Footer component
 
 export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [userId, setUserId] = useState(null); // State to store user ID
+  const [isPrivate, setIsPrivate] = useState(false); // State for private account option
+  const [profilePictureUrl, setProfilePictureUrl] = useState('https://via.placeholder.com/150'); // Placeholder image URL
 
-  // Placeholder image URL, replace it with the actual URL of the user's profile picture
-  const profilePictureUrl = 'https://via.placeholder.com/150';
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        // Fetch user data from Firestore when component mounts
+        const user = auth.currentUser;
+        if (user) {
+          setUserId(user.uid); // Set user ID if user is authenticated
+          const userData = await fetchUserData(user.uid); // Pass user ID to fetchUserData function
+          setUsername(userData.username);
+          setPhoneNumber(userData.phoneNumber);
+          // Update profile picture URL if available in user data
+          if (userData.profilePictureUrl) {
+            setProfilePictureUrl(userData.profilePictureUrl);
+          }
+          // Update isPrivate state if available in user data
+          if (userData.isPrivate !== undefined) {
+            setIsPrivate(userData.isPrivate);
+          }
+        } else {
+          console.log('User is not authenticated');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+      }
+    };
 
-  const handleSaveProfile = () => {
-    // Handle saving the user's profile data
+    getUserData();
+
+    // Cleanup function
+    return () => {
+      // Any cleanup logic here
+    };
+  }, []); // useEffect will run only once when the component mounts
+  
+  const handleProfileSave = () => {
+    handleSaveProfile(userId, username, phoneNumber, profilePictureUrl, isPrivate); // Call the handleSaveProfile function with profile picture URL and private account option
   };
 
   return (
     <View style={styles.container}>
-      <Header navigation={navigation} showBackButton={true} />
+      {/* Header */}
+      <Header navigation={navigation} />
       <View style={styles.content}>
+        {/* Profile Picture */}
         <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
         <View style={styles.form}>
           <TextInput
@@ -34,6 +70,7 @@ export default function UserProfileScreen({ navigation }) {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
           />
+          {/* Private Account Option */}
           <View style={styles.switchContainer}>
             <Text style={styles.switchLabel}>Private Account</Text>
             <TouchableOpacity
@@ -43,11 +80,12 @@ export default function UserProfileScreen({ navigation }) {
               <Text style={styles.switchButtonText}>{isPrivate ? 'ON' : 'OFF'}</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
+          <TouchableOpacity style={styles.button} onPress={handleProfileSave}>
             <Text style={styles.buttonText}>Save Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
+      {/* Footer */}
       <Footer />
     </View>
   );
@@ -63,14 +101,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  form: {
+    width: '75%',
+  },
   profilePicture: {
     width: 150,
     height: 150,
     borderRadius: 75,
     marginBottom: 20,
-  },
-  form: {
-    width: '80%',
   },
   input: {
     height: 40,

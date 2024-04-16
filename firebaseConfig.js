@@ -1,6 +1,6 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword as createUser, signInWithEmailAndPassword as signIn } from "firebase/auth"; // Import necessary functions
+import { getAuth, createUserWithEmailAndPassword as createUser, signInWithEmailAndPassword as signIn } from "firebase/auth";
+import { getFirestore, collection, doc, setDoc, getDoc } from "firebase/firestore"; // Import getDoc
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,15 +16,63 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const firestore = getFirestore(app); // Initialize Firestore
 
 // Define createUserWithEmailAndPassword function
-const createUserWithEmailAndPassword = (email, password) => {
-  return createUser(auth, email, password);
+const createUserWithEmailAndPassword = async (email, password) => {
+  try {
+    const userCredential = await createUser(auth, email, password);
+    console.log('User successfully created:', userCredential.user.uid);
+    return userCredential;
+  } catch (error) {
+    console.error('Error creating user:', error.message);
+    throw error;
+  }
 };
 
 // Define signInWithEmailAndPassword function
-const signInWithEmailAndPassword = (email, password) => {
-  return signIn(auth, email, password);
+const signInWithEmailAndPassword = async (email, password) => {
+  try {
+    const userCredential = await signIn(auth, email, password);
+    console.log('User successfully signed in:', userCredential.user.uid);
+    return userCredential;
+  } catch (error) {
+    console.error('Error signing in:', error.message);
+    throw error;
+  }
 };
 
-export { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword }; // Export the auth object, createUserWithEmailAndPassword and signInWithEmailAndPassword functions
+// Define handleSaveProfile function
+const handleSaveProfile = async (userId, username, phoneNumber) => {
+  const userDocRef = doc(collection(firestore, 'users'), userId);
+  try {
+    // Update user data in Firestore
+    await setDoc(userDocRef, {
+      username,
+      phoneNumber,
+    }, { merge: true }); // Use merge option to merge with existing data if it exists
+    console.log('User profile updated successfully!');
+  } catch (error) {
+    console.error('Error saving user profile:', error.message);
+    throw error;
+  }
+};
+
+// Define fetchUserData function
+const fetchUserData = async (userId) => {
+  try {
+    const userDoc = await getDoc(doc(collection(firestore, 'users'), userId));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      return userData;
+    } else {
+      console.log('No such document!');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error.message);
+    throw error;
+  }
+};
+
+export { auth, firestore, createUserWithEmailAndPassword, signInWithEmailAndPassword, handleSaveProfile, fetchUserData };
