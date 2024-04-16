@@ -17,7 +17,7 @@ export default function UserProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header navigation={navigation} />
+      <Header navigation={navigation} showBackButton={true} />
       <View style={styles.content}>
         <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
         <View style={styles.form}>
