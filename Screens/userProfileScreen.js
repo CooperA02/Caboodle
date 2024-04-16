@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import Header from '../Components/header';
+import Footer from '../Components/footer';
 
-export default function UserProfileScreen() {
+export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -15,34 +17,38 @@ export default function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          keyboardType="phone-pad"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-        />
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>Private Account</Text>
-          <TouchableOpacity
-            style={[styles.switchButton, isPrivate ? styles.switchButtonOn : null]}
-            onPress={() => setIsPrivate(!isPrivate)}
-          >
-            <Text style={styles.switchButtonText}>{isPrivate ? 'ON' : 'OFF'}</Text>
+      <Header navigation={navigation} />
+      <View style={styles.content}>
+        <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchLabel}>Private Account</Text>
+            <TouchableOpacity
+              style={[styles.switchButton, isPrivate ? styles.switchButtonOn : null]}
+              onPress={() => setIsPrivate(!isPrivate)}
+            >
+              <Text style={styles.switchButtonText}>{isPrivate ? 'ON' : 'OFF'}</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
+            <Text style={styles.buttonText}>Save Profile</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
-          <Text style={styles.buttonText}>Save Profile</Text>
-        </TouchableOpacity>
       </View>
+      <Footer />
     </View>
   );
 }
@@ -50,9 +56,12 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
   },
   profilePicture: {
     width: 150,
