@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons'; // Import icon components from Expo vector icons
 
-export default function Header({ navigation }) {
+export default function Header({ navigation, title }) {
   const handleGoBack = () => {
     navigation.goBack(); // Navigate back to the previous screen
   };
@@ -19,7 +19,7 @@ export default function Header({ navigation }) {
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
       {/* Title */}
-      <Text style={styles.title}>User Profile</Text>
+      <Text style={styles.title}>{title}</Text>
       {/* Profile Icon */}
       <TouchableOpacity style={styles.profileButton} onPress={handleGoToUserProfile}>
         <AntDesign name="user" size={24} color="black" />

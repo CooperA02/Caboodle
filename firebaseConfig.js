@@ -43,13 +43,15 @@ const signInWithEmailAndPassword = async (email, password) => {
 };
 
 // Define handleSaveProfile function
-const handleSaveProfile = async (userId, username, phoneNumber) => {
+const handleSaveProfile = async (userId, username, phoneNumber, profilePictureUrl, isPrivate) => {
   const userDocRef = doc(collection(firestore, 'users'), userId);
   try {
     // Update user data in Firestore
     await setDoc(userDocRef, {
       username,
       phoneNumber,
+      profilePictureUrl, // Add profile picture URL to user data
+      isPrivate, // Add isPrivate to user data
     }, { merge: true }); // Use merge option to merge with existing data if it exists
     console.log('User profile updated successfully!');
   } catch (error) {

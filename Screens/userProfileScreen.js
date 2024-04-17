@@ -52,7 +52,7 @@ export default function UserProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Header navigation={navigation} />
+      <Header navigation={navigation} title="Profile" />
       <View style={styles.content}>
         {/* Profile Picture */}
         <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
