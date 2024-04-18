@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Image, Alert } from 'react-native';
 import { AntDesign, Entypo } from '@expo/vector-icons'; 
 import Header from '../Components/header'; 
 import Footer from '../Components/footer'; 
 
 const windowWidth = Dimensions.get('window').width;
 
-export default function Catalogs({ navigation }) {
+export default function Catalogs({ navigation, route }) {
   const [catalogs, setCatalogs] = useState([
     { id: 1, name: 'Catalog 1' },
     { id: 2, name: 'Catalog 2' },
@@ -16,8 +16,22 @@ export default function Catalogs({ navigation }) {
   const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [filterMenuVisible, setFilterMenuVisible] = useState(false);
 
+  //Added to access the catalog, this shit is also temp for demo purposes
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Access the new catalog directly from the route params
+      const newCatalog = route.params?.newCatalog;
+      if (newCatalog) {
+        setCatalogs([...catalogs, newCatalog]);
+      }
+    });
+
+    return unsubscribe;
+ }, [navigation, route, catalogs]);
+
+
   const handleCreateNewCatalog = () => {
-    // Logic to handle creating a new catalog
+    navigation.navigate('CreateCatalogScreen');
   };
 
   const handleCatalogSelection = (catalog) => {
@@ -31,6 +45,28 @@ export default function Catalogs({ navigation }) {
   const handleFilterCatalogs = () => {
     // Logic to filter catalogs
   };
+
+  //Added this so when the user presses and holds on a catalog it will prompt the user to delete that catalog
+  const handleLongPress = (catalog) => {
+    Alert.alert(
+      "Delete Catalog",
+      "Are you sure you want to delete this catalog?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => handleDeleteCatalog(catalog) }
+      ],
+      { cancelable: false }
+    );
+ };
+
+   const handleDeleteCatalog = (catalogToDelete) => {
+    setCatalogs(catalogs.filter(catalog => catalog.id !== catalogToDelete.id));
+  };
+
 
   return (
     <View style={styles.container}>
@@ -65,6 +101,7 @@ export default function Catalogs({ navigation }) {
                 key={catalog.id}
                 style={[styles.catalogItem, catalog === selectedCatalog ? styles.selectedCatalogItem : null]}
                 onPress={() => handleCatalogSelection(catalog)}
+                onLongPress={() => handleLongPress(catalog)} // Added onLongPress prop
               >
                 <Image source={{uri: 'https://via.placeholder.com/150'}} style={styles.catalogImage} />
                 <Text style={styles.catalogName}>{catalog.name}</Text>
