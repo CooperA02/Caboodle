@@ -7,6 +7,7 @@ import SignUpScreen from './Screens/signUpScreen'; // Import the SignUpScreen co
 import UserProfileScreen from './Screens/userProfileScreen'; // Import the UserProfileScreen component
 import CatalogsScreen from './Screens/userCatalogsScreen';
 import CreateCatalogScreen from './Screens/createCatalogScreen'; // Corrected the filename case
+import ViewCatalogScreen from './Screens/viewCatalogScreen';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />
         <Stack.Screen name="Catalogs" component={CatalogsScreen} />
         <Stack.Screen name="CreateCatalogScreen" component={CreateCatalogScreen} />
+        <Stack.Screen name="ViewCatalogScreen" component={ViewCatalogScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

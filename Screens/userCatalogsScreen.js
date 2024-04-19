@@ -36,6 +36,7 @@ export default function Catalogs({ navigation, route }) {
 
   const handleCatalogSelection = (catalog) => {
     setSelectedCatalog(catalog);
+    navigation.navigate('ViewCatalogScreen', { selectedCatalog: catalog });
   };
 
   const handleToggleFilterMenu = () => {
