@@ -1,14 +1,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { AntDesign, Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons'; // Import icon components from Expo vector icons
+import { AntDesign, Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Footer() {
   const navigation = useNavigation();
 
+  const handleGoToUserProfile = () => {
+    navigation.navigate('UserProfile'); // Navigate to the UserProfileScreen
+  };
+  
   const handleNavigateToCatalogs = () => {
     navigation.navigate('Catalogs'); // Navigate to the Catalogs screen
-  };  
+  };
+
+  const handleNavigateToSearch = () => {
+    navigation.navigate('SearchCatalogsScreen'); // Navigate to the SearchCatalogsScreen
+  };
 
   return (
     <View style={styles.container}>
@@ -16,7 +24,7 @@ export default function Footer() {
         <AntDesign name="home" size={24} color="black" />
         <Text style={styles.buttonText}>Home</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleNavigateToSearch}>
         <Feather name="search" size={24} color="black" />
         <Text style={styles.buttonText}>Search</Text>
       </TouchableOpacity>
@@ -24,7 +32,7 @@ export default function Footer() {
         <FontAwesome name="book" size={24} color="black" />
         <Text style={styles.buttonText}>Catalogs</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={handleGoToUserProfile}>
         <MaterialIcons name="settings" size={24} color="black" />
         <Text style={styles.buttonText}>Settings</Text>
       </TouchableOpacity>

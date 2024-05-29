@@ -5,7 +5,7 @@ import Header from '../Components/header';
 import Footer from '../Components/footer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function createCatalogScreen({ navigation }) {
+export default function CreateCatalogScreen({ navigation }) {
     const [catalogName, setCatalogName] = useState('');
     const [catalogCategory, setCatalogCategory] = useState('');
     const [catalogDescription, setCatalogDescription] = useState('');
