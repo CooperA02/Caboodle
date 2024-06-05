@@ -14,7 +14,7 @@
     "@react-native-firebase/firestore": "^19.2.2",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/stack": "^6.3.29",
-    "expo": "^51.0.9",
+    "expo": "^51.0.10",
     "expo-image-picker": "~15.0.5",
     "expo-status-bar": "^1.12.1",
     "firebase": "^10.11.0",
