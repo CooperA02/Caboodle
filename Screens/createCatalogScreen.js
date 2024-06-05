@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Dimensions,
   Image,
 } from "react-native";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,6 +19,7 @@ export default function CreateCatalogScreen({ navigation }) {
   const [catalogName, setCatalogName] = useState("");
   const [catalogCategory, setCatalogCategory] = useState("");
   const [catalogDescription, setCatalogDescription] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]); 
 
   const handleCreateCatalog = async () => {
     const timestamp = new Date().getTime();
@@ -30,6 +31,7 @@ export default function CreateCatalogScreen({ navigation }) {
       name: catalogName,
       category: catalogCategory,
       description: catalogDescription,
+      images: selectedImages, 
     };
 
     // Store the catalog data with AsyncStorage /temp for demo, will need to be replaced with firebase
@@ -45,12 +47,33 @@ export default function CreateCatalogScreen({ navigation }) {
     }
   };
 
+  const pickImage = async () => {
+    // Request permissions to use the camera
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== "granted") {
+      alert("Sorry, we need camera permissions to make this work!");
+      return;
+    }
+
+    // Open Camera App
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImages([...selectedImages, result.assets[0].uri]); 
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header navigation={navigation} title="Create New Catalog" />
       <ScrollView style={styles.content}>
         <View style={styles.buttonWrapper}>
-          <TouchableOpacity style={styles.addPhotoButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
             <View style={{ alignItems: "center" }}>
               <Text style={{ marginRight: 10, marginBottom: 15 }}>
                 Add Item Photos
@@ -58,6 +81,13 @@ export default function CreateCatalogScreen({ navigation }) {
               <AntDesign name="pluscircleo" size={24} color="black" />
             </View>
           </TouchableOpacity>
+        </View>
+        <View style={styles.imagesContainer}>
+          {selectedImages.map((imageUri, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            </View>
+          ))}
         </View>
         <TextInput
           placeholder="Name Your Catalog"
@@ -123,6 +153,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
+  imagesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    marginTop: 20,
+  },
+  imageContainer: {
+    width: "30%",
+    aspectRatio: 1,
+    margin: "1%",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+  },  
   input: {
     height: 40,
     borderColor: "gray",
