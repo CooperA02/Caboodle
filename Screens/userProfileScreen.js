@@ -11,6 +11,8 @@ export default function UserProfileScreen({ navigation }) {
   const [isPrivate, setIsPrivate] = useState(false); // State for private account option
   const [profilePictureUrl, setProfilePictureUrl] = useState('https://via.placeholder.com/150'); // Placeholder image URL
 
+  //Settings will go here as a button, take the user to a new page
+
   useEffect(() => {
     const getUserData = async () => {
       try {

@@ -11,6 +11,10 @@ import { useNavigation } from "@react-navigation/native";
 export default function Footer() {
   const navigation = useNavigation();
 
+  const handleNavigateToHome = () => {
+    navigation.navigate('UserHomeScreen'); //Navigates to the home screen
+  };
+
   const handleNavigateToUserProfile = () => {
     navigation.navigate("UserProfile"); // Navigate to the UserProfileScreen
   };
@@ -27,8 +31,7 @@ export default function Footer() {
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
-        onPress={handleNavigateToUserProfile}
-      >
+        onPress={handleNavigateToHome}>
         <AntDesign name="home" size={24} color="black" />
         <Text style={styles.buttonText}>Home</Text>
       </TouchableOpacity>
@@ -59,7 +62,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 15,
     backgroundColor: "#eee",
   },
   button: {

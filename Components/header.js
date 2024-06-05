@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     flexDirection: 'row',
+    paddingTop: 35,
     alignItems: 'center',
   },
   backButtonText: {
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
   },
   profileButton: {
     flexDirection: 'row',
+    paddingTop: 35,
     alignItems: 'center',
   },
 });
