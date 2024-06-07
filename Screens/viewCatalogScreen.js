@@ -10,28 +10,39 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, fetchItems } from "../firebaseConfig";
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
   const [items, setItems] = useState([]);
-  const [newItemName, setNewItemName] = useState("");
 
   // Fetching items from a server or local storage /temp for demo
   useEffect(() => {
-    setItems([
-      { id: 1, name: "Item 1", image: "https://via.placeholder.com/150" },
-      { id: 2, name: "Item 2", image: "https://via.placeholder.com/150" },
-    ]);
-  }, []);
+    const getItemData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const itemData = await fetchItems(user.uid, selectedCatalog.id);
+          setItems(itemData);
+        } else {
+          console.log("User is not authenticated");
+        }
+      } catch (error) {
+        console.error("Error fetching Item:", error.message);
+      }
+    };
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      getItemData();
+    });
+
+    return unsubscribe;
+  }, [navigation, route, items]);
 
   const handleAddItem = () => {
-    if (newItemName.trim() === "") {
-      Alert.alert("Error", "Item field cannot be empty");
-      return;
-    }
-    const newItem = { id: items.length + 1, name: newItemName };
-    setItems([...items, newItem]);
-    setNewItemName("");
+    navigation.navigate("CreateItemScreen", {
+      selectedCatalog: selectedCatalog,
+    });
   };
 
   const handleDeleteItem = (itemId) => {
@@ -75,12 +86,6 @@ export default function ViewCatalogScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Add new item"
-          value={newItemName}
-          onChangeText={setNewItemName}
-        />
         <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>

@@ -12,27 +12,32 @@ import {
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
+import { auth, fetchCatalogs } from "../firebaseConfig";
 
 const windowWidth = Dimensions.get("window").width;
 
 export default function Catalogs({ navigation, route }) {
-  const [catalogs, setCatalogs] = useState([
-    { id: 1, name: "Catalog 1" },
-    { id: 2, name: "Catalog 2" },
-    { id: 3, name: "Catalog 3" },
-    { id: 4, name: "Catalog 4" },
-  ]);
+  const [catalogs, setCatalogs] = useState([]);
   const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [filterMenuVisible, setFilterMenuVisible] = useState(false);
 
-  //Added to access the catalog, this shit is also temp for demo purposes
   useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      // Access the new catalog directly from the route params
-      const newCatalog = route.params?.newCatalog;
-      if (newCatalog) {
-        setCatalogs([...catalogs, newCatalog]);
+    const getCatalogData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const catalogData = await fetchCatalogs(user.uid);
+          setCatalogs(catalogData);
+        } else {
+          console.log("User is not authenticated");
+        }
+      } catch (error) {
+        console.error("Error fetching Catalog data:", error.message);
       }
+    };
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      getCatalogData();
     });
 
     return unsubscribe;

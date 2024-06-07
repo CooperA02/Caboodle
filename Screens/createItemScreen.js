@@ -13,26 +13,26 @@ import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, createCatalog } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
+import { auth, createItem } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
 
-export default function CreateCatalogScreen({ navigation }) {
-  const [catalogName, setCatalogName] = useState("");
-  const [catalogCategory, setCatalogCategory] = useState("");
-  const [catalogDescription, setCatalogDescription] = useState("");
+export default function CreateItemScreen({ navigation, route }) {
+  const { selectedCatalog } = route.params;
+  const [itemName, setItemName] = useState("");
+  const [itemValue, setItemValue] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
 
-  const handleCreateCatalog = async () => {
-    // Prepare the catalog data
-    const newCatalog = {
-      name: catalogName,
-      category: catalogCategory,
-      description: catalogDescription,
-      images: selectedImages,
+  const handleCreateItem = async () => {
+    // Prepare the Item data
+    const newItem = {
+      name: itemName,
+      value: itemValue,
     };
 
     try {
-      createCatalog(auth.currentUser.uid, newCatalog);
-      navigation.navigate("Catalogs", {});
+      createItem(auth.currentUser.uid, selectedCatalog.id, newItem);
+      navigation.navigate("ViewCatalogScreen", {
+        selectedCatalog: selectedCatalog,
+      });
     } catch (e) {
       console.error("Error saving catalog data: ", e);
     }
@@ -61,7 +61,7 @@ export default function CreateCatalogScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header navigation={navigation} title="Create New Catalog" />
+      <Header navigation={navigation} title="Create New Item" />
       <ScrollView style={styles.content}>
         <View style={styles.buttonWrapper}>
           <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
@@ -81,23 +81,16 @@ export default function CreateCatalogScreen({ navigation }) {
           ))}
         </View>
         <TextInput
-          placeholder="Name Your Catalog"
-          value={catalogName}
-          onChangeText={setCatalogName}
+          placeholder="Name of Item"
+          value={itemName}
+          onChangeText={setItemName}
           style={[styles.input, { marginTop: 100 }]}
         />
         <TextInput
-          placeholder="Category"
-          value={catalogCategory}
-          onChangeText={setCatalogCategory}
+          placeholder="Value of Item"
+          value={itemValue}
+          onChangeText={setItemValue}
           style={styles.input}
-        />
-        <TextInput
-          placeholder="Describe The Catalog"
-          value={catalogDescription}
-          onChangeText={setCatalogDescription}
-          multiline={true}
-          style={styles.descriptionInput}
         />
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -108,7 +101,7 @@ export default function CreateCatalogScreen({ navigation }) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.createButton}
-            onPress={handleCreateCatalog}
+            onPress={handleCreateItem}
           >
             <Text style={styles.buttonText}>Create</Text>
           </TouchableOpacity>

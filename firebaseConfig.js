@@ -106,10 +106,22 @@ const createCatalog = async (userId, Catalog) => {
     const docRef = await addDoc(
       collection(firestore, "users", userId, "catalogs"),
       {
+        id: null,
         name: Catalog.name,
         category: Catalog.category,
         description: Catalog.description,
       }
+    );
+    const catalogDocRef = doc(
+      collection(firestore, "users", userId, "catalogs"),
+      docRef.id
+    );
+    await setDoc(
+      catalogDocRef,
+      {
+        id: docRef.id,
+      },
+      { merge: true }
     );
     console.log("Catalog successfully created:", docRef.id);
     return docRef.id;
@@ -129,7 +141,54 @@ const fetchCatalogs = async (userId) => {
     });
     return catalogs;
   } catch (error) {
-    console.error("Error fetching user data:", error.message);
+    console.error("Error fetching catalog data:", error.message);
+    throw error;
+  }
+};
+
+// Define createItem function
+const createItem = async (userId, catalogId, Item) => {
+  try {
+    const docRef = await addDoc(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items"),
+      {
+        id: null,
+        name: Item.name,
+        value: Item.value,
+      }
+    );
+    const itemDocRef = doc(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items"),
+      docRef.id
+    );
+    await setDoc(
+      itemDocRef,
+      {
+        id: docRef.id,
+      },
+      { merge: true }
+    );
+    console.log("Item successfully created:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating Item:", error.message);
+    throw error;
+  }
+};
+
+const fetchItems = async (userId, catalogId) => {
+  try {
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    );
+    const querySnapshot = await getDocs(q);
+    const items = [];
+    querySnapshot.forEach((doc) => {
+      items.push(doc.data());
+    });
+    return items;
+  } catch (error) {
+    console.error("Error fetching item data:", error.message);
     throw error;
   }
 };
@@ -143,4 +202,6 @@ export {
   fetchUserData,
   createCatalog,
   fetchCatalogs,
+  createItem,
+  fetchItems,
 };
