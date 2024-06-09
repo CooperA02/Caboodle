@@ -29,7 +29,7 @@ export default function CreateItemScreen({ navigation, route }) {
     };
 
     try {
-      createItem(auth.currentUser.uid, selectedCatalog.id, newItem);
+      await createItem(auth.currentUser.uid, selectedCatalog.id, newItem);
       navigation.navigate("ViewCatalogScreen", {
         selectedCatalog: selectedCatalog,
       });

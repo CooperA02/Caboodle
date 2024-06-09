@@ -13,6 +13,7 @@ import {
   getDocs,
   addDoc,
   query,
+  deleteDoc,
 } from "firebase/firestore"; // Import getDoc
 
 // Your web app's Firebase configuration
@@ -146,6 +147,21 @@ const fetchCatalogs = async (userId) => {
   }
 };
 
+const deleteCatalogs = async (userId, catalogId) => {
+  try {
+    const q = query(collection(firestore, "users", userId, "catalogs"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().id === catalogId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting catalog data:", error.message);
+    throw error;
+  }
+};
+
 // Define createItem function
 const createItem = async (userId, catalogId, Item) => {
   try {
@@ -193,6 +209,23 @@ const fetchItems = async (userId, catalogId) => {
   }
 };
 
+const deleteItems = async (userId, catalogId, itemId) => {
+  try {
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().id === itemId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting item data:", error.message);
+    throw error;
+  }
+};
+
 export {
   auth,
   firestore,
@@ -202,6 +235,8 @@ export {
   fetchUserData,
   createCatalog,
   fetchCatalogs,
+  deleteCatalogs,
   createItem,
   fetchItems,
+  deleteItems,
 };

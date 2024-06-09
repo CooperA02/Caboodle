@@ -12,7 +12,7 @@ import {
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import { auth, fetchCatalogs } from "../firebaseConfig";
+import { auth, fetchCatalogs, deleteCatalogs } from "../firebaseConfig";
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -78,6 +78,7 @@ export default function Catalogs({ navigation, route }) {
   };
 
   const handleDeleteCatalog = (catalogToDelete) => {
+    deleteCatalogs(auth.currentUser.uid, catalogToDelete.id);
     setCatalogs(
       catalogs.filter((catalog) => catalog.id !== catalogToDelete.id)
     );

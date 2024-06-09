@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, fetchItems } from "../firebaseConfig";
+import { auth, fetchItems, deleteItems } from "../firebaseConfig";
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -57,11 +57,20 @@ export default function ViewCatalogScreen({ navigation, route }) {
         },
         {
           text: "OK",
-          onPress: () => setItems(items.filter((item) => item.id !== itemId)),
+          onPress: () => handleDelete(itemId),
         },
       ],
       { cancelable: false }
     );
+  };
+
+  const handleDelete = async (itemId) => {
+    try {
+      deleteItems(auth.currentUser.uid, selectedCatalog.id, itemId);
+      setItems(items.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error("Error deleting item data:", error.message);
+    }
   };
 
   const handleGoBack = () => {
