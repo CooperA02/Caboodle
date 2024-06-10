@@ -77,6 +77,14 @@ export default function ViewCatalogScreen({ navigation, route }) {
     navigation.goBack(); // Go back to the Catalog Screen
   };
 
+  const handleNavigateToViewItemScreen = (itemId) => {
+    const selectedItem = items.find((item) => item.id === itemId);
+    navigation.navigate("ViewItemScreen", {
+      selectedItem: selectedItem,
+      selectedCatalog: selectedCatalog,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
@@ -86,12 +94,16 @@ export default function ViewCatalogScreen({ navigation, route }) {
 
       <ScrollView style={styles.itemsContainer}>
         {items.map((item) => (
-          <View key={item.id} style={styles.itemRow}>
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => handleNavigateToViewItemScreen(item.id)}
+            style={styles.itemRow}
+          >
             <Text style={styles.itemName}>{item.name}</Text>
             <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
               <AntDesign name="delete" size={24} color="red" />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>

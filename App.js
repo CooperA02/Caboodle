@@ -9,6 +9,8 @@ import ViewCatalogScreen from "./Screens/viewCatalogScreen";
 import SearchCatalogsScreen from "./Screens/searchCatalogsScreen";
 import UserHomeScreen from "./Screens/userHomeScreen";
 import CreateItemScreen from "./Screens/createItemScreen";
+import viewItemScreen from "./Screens/viewItemScreen";
+import createAttributeScreen from "./Screens/createAttributeScreen";
 
 const Stack = createStackNavigator();
 
@@ -24,16 +26,12 @@ export default function App() {
         <Stack.Screen name="UserProfile" component={UserProfileScreen} />
         <Stack.Screen name="UserHomeScreen" component={UserHomeScreen} />
         <Stack.Screen name="Catalogs" component={CatalogsScreen} />
-        <Stack.Screen
-          name="CreateCatalogScreen"
-          component={CreateCatalogScreen}
-        />
+        <Stack.Screen name="CreateCatalogScreen" component={CreateCatalogScreen}/>
         <Stack.Screen name="ViewCatalogScreen" component={ViewCatalogScreen} />
-        <Stack.Screen
-          name="SearchCatalogsScreen"
-          component={SearchCatalogsScreen}
-        />
+        <Stack.Screen name="SearchCatalogsScreen" component={SearchCatalogsScreen}/>
         <Stack.Screen name="CreateItemScreen" component={CreateItemScreen} />
+        <Stack.Screen name="ViewItemScreen" component={viewItemScreen} />
+        <Stack.Screen name="CreateAttributeScreen" component={createAttributeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
