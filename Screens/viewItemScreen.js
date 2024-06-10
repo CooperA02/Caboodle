@@ -5,16 +5,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
   Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, fetchAttributes } from "../firebaseConfig";
 
 export default function ViewItemScreen({ navigation, route }) {
-  const { selectedItem } = route.params;
-  const { selectedCatalog } = route.params;
+  const { selectedItem, selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
 
   useEffect(() => {
@@ -22,6 +19,7 @@ export default function ViewItemScreen({ navigation, route }) {
       try {
         const user = auth.currentUser;
         if (user) {
+          console.log(`Fetching attributes for user: ${user.uid}`);
           const attributeData = await fetchAttributes(
             user.uid,
             selectedCatalog.id,
@@ -35,17 +33,19 @@ export default function ViewItemScreen({ navigation, route }) {
         console.error("Error fetching Attributes:", error.message);
       }
     };
-
+  
     const unsubscribe = navigation.addListener("focus", () => {
       getAttributeData();
     });
-
+  
     return unsubscribe;
-  }, [navigation, route, attributes]);
+  }, [navigation, selectedCatalog.id, selectedItem.id]);
+  
 
   const handleAddAttribute = () => {
     navigation.navigate("CreateAttributeScreen", {
-      selectedItem: selectedItem,
+      selectedItem,
+      selectedCatalog,
     });
   };
 
@@ -70,7 +70,7 @@ export default function ViewItemScreen({ navigation, route }) {
   };
 
   const handleGoBack = () => {
-    navigation.goBack(); // Go back to the item Screen
+    navigation.goBack();
   };
 
   return (
@@ -110,13 +110,13 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   goBackButton: {
-    alignSelf: "flex-start", // Align to the left
+    alignSelf: "flex-start",
     marginBottom: 20,
   },
   goBackButtonText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#007bff", // Use a contrasting color for the button text
+    color: "#007bff",
   },
   itemName: {
     fontSize: 24,

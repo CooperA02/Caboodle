@@ -14,6 +14,7 @@ import { auth, createAttribute } from "../firebaseConfig";
 
 export default function CreateAttributeScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
+  const { selectedItem } = route.params;
   const [attributeName, setAttributeName] = useState("");
   const [attributeValue, setAttributeValue] = useState("");
 

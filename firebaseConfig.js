@@ -3,6 +3,8 @@ import {
   getAuth,
   createUserWithEmailAndPassword as createUser,
   signInWithEmailAndPassword as signIn,
+  initializeAuth,
+  getReactNativePersistence,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -14,7 +16,7 @@ import {
   addDoc,
   query,
 } from "firebase/firestore";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -31,11 +33,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Auth with AsyncStorage for persistence
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+
+// Initialize Firestore
+const firestore = getFirestore(app);
 
 // Define createUserWithEmailAndPassword function
 const createUserWithEmailAndPassword = async (email, password) => {
@@ -69,7 +72,7 @@ const handleSaveProfile = async (
   profilePictureUrl,
   isPrivate
 ) => {
-  const userDocRef = doc(collection(getFirestore(), "users"), userId);
+  const userDocRef = doc(collection(firestore, "users"), userId);
   try {
     // Update user data in Firestore
     await setDoc(
@@ -77,8 +80,8 @@ const handleSaveProfile = async (
       {
         username,
         phoneNumber,
-        profilePictureUrl, // Add profile picture URL to user data
-        isPrivate, // Add isPrivate to user data
+        profilePictureUrl,
+        isPrivate,
       },
       { merge: true }
     ); // Use merge option to merge with existing data if it exists
@@ -92,9 +95,7 @@ const handleSaveProfile = async (
 // Define fetchUserData function
 const fetchUserData = async (userId) => {
   try {
-    const userDoc = await getDoc(
-      doc(collection(getFirestore(), "users"), userId)
-    );
+    const userDoc = await getDoc(doc(collection(firestore, "users"), userId));
     if (userDoc.exists()) {
       const userData = userDoc.data();
       return userData;
@@ -111,26 +112,14 @@ const fetchUserData = async (userId) => {
 // Define createCatalog function
 const createCatalog = async (userId, Catalog) => {
   try {
-    const docRef = await addDoc(
-      collection(getFirestore(), "users", userId, "catalogs"),
-      {
-        id: null,
-        name: Catalog.name,
-        category: Catalog.category,
-        description: Catalog.description,
-      }
-    );
-    const catalogDocRef = doc(
-      collection(getFirestore(), "users", userId, "catalogs"),
-      docRef.id
-    );
-    await setDoc(
-      catalogDocRef,
-      {
-        id: docRef.id,
-      },
-      { merge: true }
-    );
+    const docRef = await addDoc(collection(firestore, "users", userId, "catalogs"), {
+      id: null,
+      name: Catalog.name,
+      category: Catalog.category,
+      description: Catalog.description,
+    });
+    const catalogDocRef = doc(collection(firestore, "users", userId, "catalogs"), docRef.id);
+    await setDoc(catalogDocRef, { id: docRef.id }, { merge: true });
     console.log("Catalog successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -141,7 +130,7 @@ const createCatalog = async (userId, Catalog) => {
 
 const fetchCatalogs = async (userId) => {
   try {
-    const q = query(collection(getFirestore(), "users", userId, "catalogs"));
+    const q = query(collection(firestore, "users", userId, "catalogs"));
     const querySnapshot = await getDocs(q);
     const catalogs = [];
     querySnapshot.forEach((doc) => {
@@ -158,14 +147,7 @@ const fetchCatalogs = async (userId) => {
 const createItem = async (userId, catalogId, Item) => {
   try {
     const docRef = await addDoc(
-      collection(
-        getFirestore(),
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items"
-      ),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items"),
       {
         id: null,
         name: Item.name,
@@ -173,23 +155,10 @@ const createItem = async (userId, catalogId, Item) => {
       }
     );
     const itemDocRef = doc(
-      collection(
-        getFirestore(),
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items"
-      ),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items"),
       docRef.id
     );
-    await setDoc(
-      itemDocRef,
-      {
-        id: docRef.id,
-      },
-      { merge: true }
-    );
+    await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
     console.log("Item successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -200,16 +169,7 @@ const createItem = async (userId, catalogId, Item) => {
 
 const fetchItems = async (userId, catalogId) => {
   try {
-    const q = query(
-      collection(
-        getFirestore(),
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items"
-      )
-    );
+    const q = query(collection(firestore, "users", userId, "catalogs", catalogId, "items"));
     const querySnapshot = await getDocs(q);
     const items = [];
     querySnapshot.forEach((doc) => {
@@ -222,19 +182,11 @@ const fetchItems = async (userId, catalogId) => {
   }
 };
 
-const createAttribute = async (userId, catalogId, itemId) => {
+// Define createAttribute function
+const createAttribute = async (userId, catalogId, Item, Attribute) => {
   try {
     const docRef = await addDoc(
-      collection(
-        firestore,
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items",
-        itemId,
-        "attributes"
-      ),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes"),
       {
         id: null,
         name: Attribute.name,
@@ -242,25 +194,10 @@ const createAttribute = async (userId, catalogId, itemId) => {
       }
     );
     const itemDocRef = doc(
-      collection(
-        firestore,
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items",
-        itemId,
-        "attributes"
-      ),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes"),
       docRef.id
     );
-    await setDoc(
-      itemDocRef,
-      {
-        id: docRef.id,
-      },
-      { merge: true }
-    );
+    await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
     console.log("Attribute successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -269,26 +206,17 @@ const createAttribute = async (userId, catalogId, itemId) => {
   }
 };
 
-const fetchAttributes = async (userId, catalogId, itemId) => {
+const fetchAttributes = async (userId, catalogId, Item) => {
   try {
     const q = query(
-      collection(
-        firestore,
-        "users",
-        userId,
-        "catalogs",
-        catalogId,
-        "items",
-        itemId,
-        "attributes"
-      )
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes")
     );
     const querySnapshot = await getDocs(q);
-    const items = [];
+    const attributes = [];
     querySnapshot.forEach((doc) => {
-      items.push(doc.data());
+      attributes.push(doc.data());
     });
-    return items;
+    return attributes;
   } catch (error) {
     console.error("Error fetching Attribute data:", error.message);
     throw error;
@@ -297,6 +225,7 @@ const fetchAttributes = async (userId, catalogId, itemId) => {
 
 export {
   auth,
+  firestore,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   handleSaveProfile,
