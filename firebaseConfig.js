@@ -15,6 +15,7 @@ import {
   getDocs,
   addDoc,
   query,
+  deleteDoc,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -223,6 +224,23 @@ const fetchAttributes = async (userId, catalogId, Item) => {
   }
 };
 
+const deleteItems = async (userId, catalogId, itemId) => {
+  try {
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().id === itemId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting item data:", error.message);
+    throw error;
+  }
+};
+
 export {
   auth,
   firestore,
@@ -234,6 +252,7 @@ export {
   fetchCatalogs,
   createItem,
   fetchItems,
+  deleteItems,
   createAttribute,
   fetchAttributes,
 };
