@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, fetchAttributes } from "../firebaseConfig";
 
 export default function ViewItemScreen({ navigation, route }) {
+  const { selectedItem } = route.params;
   const { selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
 
@@ -21,7 +22,11 @@ export default function ViewItemScreen({ navigation, route }) {
       try {
         const user = auth.currentUser;
         if (user) {
-          const attributeData = await fetchAttributes(user.uid, selectedCatalog.id); // Assuming fetchAttributes returns attribute data
+          const attributeData = await fetchAttributes(
+            user.uid,
+            selectedCatalog.id,
+            selectedItem.id
+          );
           setAttributes(attributeData);
         } else {
           console.log("User is not authenticated");
@@ -56,7 +61,8 @@ export default function ViewItemScreen({ navigation, route }) {
         },
         {
           text: "OK",
-          onPress: () => setAttributes(attributes.filter((attr) => attr.id!== attributeId)),
+          onPress: () =>
+            setAttributes(attributes.filter((attr) => attr.id !== attributeId)),
         },
       ],
       { cancelable: false }
@@ -67,13 +73,12 @@ export default function ViewItemScreen({ navigation, route }) {
     navigation.goBack(); // Go back to the item Screen
   };
 
-
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
         <Text style={styles.goBackButtonText}>Go Back</Text>
       </TouchableOpacity>
-      <Text style={styles.catalogName}>{selectedCatalog.name}</Text>
+      <Text style={styles.itemName}>{selectedItem.name}</Text>
 
       <ScrollView style={styles.attributesContainer}>
         {attributes.map((attr) => (
@@ -86,7 +91,10 @@ export default function ViewItemScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>
-        <TouchableOpacity style={styles.addAttributeButton} onPress={handleAddAttribute}>
+        <TouchableOpacity
+          style={styles.addAttributeButton}
+          onPress={handleAddAttribute}
+        >
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
@@ -110,7 +118,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#007bff", // Use a contrasting color for the button text
   },
-  catalogName: {
+  itemName: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,

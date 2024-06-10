@@ -24,9 +24,15 @@ export default function CreateAttributeScreen({ navigation, route }) {
     };
 
     try {
-      createAttribute(auth.currentUser.uid, selectedCatalog.id, selectedItem.id, newAttribute);
-      navigation.navigate("ViewCatalogScreen", {
+      createAttribute(
+        auth.currentUser.uid,
+        selectedCatalog.id,
+        selectedItem.id,
+        newAttribute
+      );
+      navigation.navigate("ViewItemScreen", {
         selectedCatalog: selectedCatalog,
+        selectedItem: selectedItem,
       });
     } catch (e) {
       console.error("Error saving catalog data: ", e);
@@ -116,4 +122,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-

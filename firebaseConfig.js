@@ -14,7 +14,7 @@ import {
   addDoc,
   query,
 } from "firebase/firestore";
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -31,7 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Auth with AsyncStorage for persistence
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
@@ -92,7 +92,9 @@ const handleSaveProfile = async (
 // Define fetchUserData function
 const fetchUserData = async (userId) => {
   try {
-    const userDoc = await getDoc(doc(collection(getFirestore(), "users"), userId));
+    const userDoc = await getDoc(
+      doc(collection(getFirestore(), "users"), userId)
+    );
     if (userDoc.exists()) {
       const userData = userDoc.data();
       return userData;
@@ -156,7 +158,14 @@ const fetchCatalogs = async (userId) => {
 const createItem = async (userId, catalogId, Item) => {
   try {
     const docRef = await addDoc(
-      collection(getFirestore(), "users", userId, "catalogs", catalogId, "items"),
+      collection(
+        getFirestore(),
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items"
+      ),
       {
         id: null,
         name: Item.name,
@@ -164,7 +173,14 @@ const createItem = async (userId, catalogId, Item) => {
       }
     );
     const itemDocRef = doc(
-      collection(getFirestore(), "users", userId, "catalogs", catalogId, "items"),
+      collection(
+        getFirestore(),
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items"
+      ),
       docRef.id
     );
     await setDoc(
@@ -185,7 +201,14 @@ const createItem = async (userId, catalogId, Item) => {
 const fetchItems = async (userId, catalogId) => {
   try {
     const q = query(
-      collection(getFirestore(), "users", userId, "catalogs", catalogId, "items")
+      collection(
+        getFirestore(),
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items"
+      )
     );
     const querySnapshot = await getDocs(q);
     const items = [];
@@ -199,10 +222,19 @@ const fetchItems = async (userId, catalogId) => {
   }
 };
 
-const createAttribute = async (userId, catalogId, Item) => {
+const createAttribute = async (userId, catalogId, itemId) => {
   try {
     const docRef = await addDoc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
       {
         id: null,
         name: Attribute.name,
@@ -210,7 +242,16 @@ const createAttribute = async (userId, catalogId, Item) => {
       }
     );
     const itemDocRef = doc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
       docRef.id
     );
     await setDoc(
@@ -228,10 +269,19 @@ const createAttribute = async (userId, catalogId, Item) => {
   }
 };
 
-const fetchAttribute = async (userId, catalogId) => {
+const fetchAttributes = async (userId, catalogId, itemId) => {
   try {
     const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", attributeId, "attributes")
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      )
     );
     const querySnapshot = await getDocs(q);
     const items = [];
@@ -256,5 +306,5 @@ export {
   createItem,
   fetchItems,
   createAttribute,
-  fetchAttribute
+  fetchAttributes,
 };
