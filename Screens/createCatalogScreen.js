@@ -31,7 +31,7 @@ export default function CreateCatalogScreen({ navigation }) {
     };
 
     try {
-      createCatalog(auth.currentUser.uid, newCatalog);
+      await createCatalog(auth.currentUser.uid, newCatalog);
       navigation.navigate("Catalogs", {});
     } catch (e) {
       console.error("Error saving catalog data: ", e);

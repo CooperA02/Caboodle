@@ -144,6 +144,21 @@ const fetchCatalogs = async (userId) => {
   }
 };
 
+const deleteCatalogs = async (userId, catalogId) => {
+  try {
+    const q = query(collection(firestore, "users", userId, "catalogs"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().id === catalogId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting catalog data:", error.message);
+    throw error;
+  }
+};
+
 // Define createItem function
 const createItem = async (userId, catalogId, Item) => {
   try {
@@ -182,6 +197,7 @@ const fetchItems = async (userId, catalogId) => {
     throw error;
   }
 };
+
 
 // Define createAttribute function
 const createAttribute = async (userId, catalogId, Item, Attribute) => {
@@ -250,6 +266,7 @@ export {
   fetchUserData,
   createCatalog,
   fetchCatalogs,
+  deleteCatalogs,
   createItem,
   fetchItems,
   deleteItems,
