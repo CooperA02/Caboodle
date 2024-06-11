@@ -41,7 +41,7 @@ export default function Catalogs({ navigation, route }) {
     });
 
     return unsubscribe;
-  }, [navigation, route, catalogs]);
+  }, [navigation, route]);
 
   const handleCreateNewCatalog = () => {
     navigation.navigate("CreateCatalogScreen");
@@ -60,7 +60,6 @@ export default function Catalogs({ navigation, route }) {
     // Logic to filter catalogs
   };
 
-  //Added this so when the user presses and holds on a catalog it will prompt the user to delete that catalog
   const handleLongPress = (catalog) => {
     Alert.alert(
       "Delete Catalog",
@@ -139,12 +138,19 @@ export default function Catalogs({ navigation, route }) {
                     : null,
                 ]}
                 onPress={() => handleCatalogSelection(catalog)}
-                onLongPress={() => handleLongPress(catalog)} // Added onLongPress prop
+                onLongPress={() => handleLongPress(catalog)}
               >
-                <Image
-                  source={{ uri: "https://via.placeholder.com/150" }}
-                  style={styles.catalogImage}
-                />
+                {catalog.images && catalog.images.length > 0 ? (
+                  <Image
+                    source={{ uri: catalog.images[0] }}
+                    style={styles.catalogImage}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: "https://via.placeholder.com/150" }}
+                    style={styles.catalogImage}
+                  />
+                )}
                 <Text style={styles.catalogName}>{catalog.name}</Text>
               </TouchableOpacity>
             ))}
@@ -218,8 +224,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   catalogItem: {
-    width: "48%", // Set width to occupy half of the row
-    aspectRatio: 1, // Maintain aspect ratio to create a square
+    width: "48%",
+    aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
@@ -228,7 +234,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   selectedCatalogItem: {
-    backgroundColor: "#ccc", // Change background color for selected catalog item
+    backgroundColor: "#ccc",
   },
   catalogImage: {
     width: "70%",

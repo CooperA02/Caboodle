@@ -6,41 +6,43 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { auth, fetchAttributes } from "../firebaseConfig";
+import { auth, fetchAttributes, fetchItems } from "../firebaseConfig";
 
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
-    const getAttributeData = async () => {
+    const getItemData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          console.log(`Fetching attributes for user: ${user.uid}`);
-          const attributeData = await fetchAttributes(
+          console.log(`Fetching item details for user: ${user.uid}`);
+          const itemData = await fetchItems(
             user.uid,
             selectedCatalog.id,
             selectedItem.id
           );
-          setAttributes(attributeData);
+          setAttributes(itemData.attributes || []);
+          setImages(itemData.images || []);
         } else {
           console.log("User is not authenticated");
         }
       } catch (error) {
-        console.error("Error fetching Attributes:", error.message);
+        console.error("Error fetching Item details:", error.message);
       }
     };
-  
+
     const unsubscribe = navigation.addListener("focus", () => {
-      getAttributeData();
+      getItemData();
     });
-  
+
     return unsubscribe;
   }, [navigation, selectedCatalog.id, selectedItem.id]);
-  
 
   const handleAddAttribute = () => {
     navigation.navigate("CreateAttributeScreen", {
@@ -79,7 +81,6 @@ export default function ViewItemScreen({ navigation, route }) {
         <Text style={styles.goBackButtonText}>Go Back</Text>
       </TouchableOpacity>
       <Text style={styles.itemName}>{selectedItem.name}</Text>
-
       <ScrollView style={styles.attributesContainer}>
         {attributes.map((attr) => (
           <View key={attr.id} style={styles.attributeRow}>
@@ -90,6 +91,16 @@ export default function ViewItemScreen({ navigation, route }) {
           </View>
         ))}
       </ScrollView>
+      <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
+  {images.map((imageUri, index) => (
+    <View key={index} style={styles.imageContainer}>
+      <Image source={{ uri: imageUri }} style={styles.image} />
+      {/* Log image URIs for debugging */}
+      {console.log("Image URI:", imageUri)}
+    </View>
+  ))}
+</ScrollView>
+
       <View style={styles.inputContainer}>
         <TouchableOpacity
           style={styles.addAttributeButton}
@@ -145,6 +156,20 @@ const styles = StyleSheet.create({
   addAttributeButton: {
     backgroundColor: "#007bff",
     padding: 10,
+    borderRadius: 5,
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  imageContainer: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
     borderRadius: 5,
   },
 });

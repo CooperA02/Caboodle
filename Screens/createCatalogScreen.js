@@ -12,8 +12,8 @@ import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, createCatalog } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
+import { auth, createCatalog, storage } from "../firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function CreateCatalogScreen({ navigation }) {
   const [catalogName, setCatalogName] = useState("");
@@ -21,32 +21,53 @@ export default function CreateCatalogScreen({ navigation }) {
   const [catalogDescription, setCatalogDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
 
-  const handleCreateCatalog = async () => {
-    // Prepare the catalog data
-    const newCatalog = {
-      name: catalogName,
-      category: catalogCategory,
-      description: catalogDescription,
-      images: selectedImages,
-    };
-
+  const uploadImageAsync = async (uri) => {
     try {
-      await createCatalog(auth.currentUser.uid, newCatalog);
-      navigation.navigate("Catalogs", {});
-    } catch (e) {
-      console.error("Error saving catalog data: ", e);
+      const blob = await fetch(uri).then((response) => response.blob());
+      const storageRef = ref(
+        storage,
+        `users/${auth.currentUser.uid}/images/${Date.now()}`
+      );
+      await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      throw error;
+    }
+  };
+
+  const handleCreateCatalog = async () => {
+    try {
+      const imageUrls = await Promise.all(
+        selectedImages.map((uri) => uploadImageAsync(uri))
+      );
+
+      const newCatalog = {
+        name: catalogName,
+        category: catalogCategory,
+        description: catalogDescription,
+        images: imageUrls, // Add the image URLs to the new catalog
+      };
+
+      try {
+        await createCatalog(auth.currentUser.uid, newCatalog);
+        navigation.navigate("Catalogs", {});
+      } catch (e) {
+        console.error("Error saving catalog data: ", e);
+      }
+    } catch (error) {
+      console.error("Error during catalog creation process: ", error);
     }
   };
 
   const pickImage = async () => {
-    // Request permissions to use the camera
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera permissions to make this work!");
       return;
     }
 
-    // Open Camera App
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -54,7 +75,7 @@ export default function CreateCatalogScreen({ navigation }) {
       quality: 1,
     });
 
-    if (!result.canceled) {
+    if (!result.cancelled && result.assets && result.assets.length > 0) {
       setSelectedImages([...selectedImages, result.assets[0].uri]);
     }
   };
@@ -169,7 +190,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   descriptionInput: {
-    height: 160, // Increase the height for the description field
+    height: 160,
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 10,

@@ -5,18 +5,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
+  Image,
   Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, fetchItems, deleteItems } from "../firebaseConfig";
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
   const [items, setItems] = useState([]);
 
-  // Fetching items from a server or local storage /temp for demo
   useEffect(() => {
     const getItemData = async () => {
       try {
@@ -37,7 +35,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
     });
 
     return unsubscribe;
-  }, [navigation, route, items]);
+  }, [navigation, selectedCatalog.id]);
 
   const handleAddItem = () => {
     navigation.navigate("CreateItemScreen", {
@@ -99,13 +97,17 @@ export default function ViewCatalogScreen({ navigation, route }) {
             onPress={() => handleNavigateToViewItemScreen(item.id)}
             style={styles.itemRow}
           >
-            <Text style={styles.itemName}>{item.name}</Text>
-            <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
-              <AntDesign name="delete" size={24} color="red" />
-            </TouchableOpacity>
+            <Image source={{ uri: item.images[0] }} style={styles.itemImage} />
+            <View style={styles.itemDetails}>
+              <Text style={styles.itemName}>{item.name}</Text>
+              <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
+                <AntDesign name="delete" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
+
       <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
           <AntDesign name="pluscircleo" size={24} color="black" />
@@ -122,12 +124,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 40,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
   catalogName: {
     fontSize: 24,
     fontWeight: "bold",
@@ -138,27 +134,30 @@ const styles = StyleSheet.create({
   },
   itemRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
+  itemImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
+  itemDetails: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   itemName: {
     fontSize: 18,
+    flex: 1,
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
-    padding: 10,
-    marginRight: 10,
   },
   addButton: {
     backgroundColor: "#007bff",
@@ -166,12 +165,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   goBackButton: {
-    alignSelf: "flex-start", // Align to the left
+    alignSelf: "flex-start",
     marginBottom: 20,
   },
   goBackButtonText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#007bff", // Use a contrasting color for the button text
+    color: "#007bff",
   },
 });

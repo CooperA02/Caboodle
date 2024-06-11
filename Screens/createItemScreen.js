@@ -27,9 +27,9 @@ export default function CreateItemScreen({ navigation, route }) {
       name: itemName,
       value: itemValue,
     };
-
+  
     try {
-      await createItem(auth.currentUser.uid, selectedCatalog.id, newItem);
+      await createItem(auth.currentUser.uid, selectedCatalog.id, newItem, selectedImages);
       navigation.navigate("ViewCatalogScreen", {
         selectedCatalog: selectedCatalog,
       });

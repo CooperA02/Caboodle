@@ -18,6 +18,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -37,6 +39,9 @@ const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+
+// Initialize Firebase Storage
+const storage = getStorage(app);
 
 // Initialize Firestore
 const firestore = getFirestore(app);
@@ -111,16 +116,21 @@ const fetchUserData = async (userId) => {
 };
 
 // Define createCatalog function
-const createCatalog = async (userId, Catalog) => {
+const createCatalog = async (userId, catalog) => {
   try {
+    // Create a new catalog document with the provided catalog data including images
     const docRef = await addDoc(collection(firestore, "users", userId, "catalogs"), {
       id: null,
-      name: Catalog.name,
-      category: Catalog.category,
-      description: Catalog.description,
+      name: catalog.name,
+      category: catalog.category,
+      description: catalog.description,
+      images: catalog.images, // Include the images field
     });
+
+    // Update the newly created document with its own ID
     const catalogDocRef = doc(collection(firestore, "users", userId, "catalogs"), docRef.id);
     await setDoc(catalogDocRef, { id: docRef.id }, { merge: true });
+
     console.log("Catalog successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -159,22 +169,32 @@ const deleteCatalogs = async (userId, catalogId) => {
   }
 };
 
-// Define createItem function
-const createItem = async (userId, catalogId, Item) => {
+// Create Item
+const createItem = async (userId, catalogId, item, images) => {
   try {
+    const imageUrls = await Promise.all(
+      images.map(async (imageUri) => {
+        const imageName = imageUri.split('/').pop(); // Get the image name from the URI
+        const response = await fetch(imageUri); // Fetch the image data
+        const blob = await response.blob(); // Convert the fetched data into a Blob
+        const storageRef = ref(storage, `users/${userId}/catalogs/${catalogId}/items/${item.name}/${imageName}`);
+        await uploadBytes(storageRef, blob); // Upload the image to Firebase Storage
+        const downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
+        return downloadURL;
+      })
+    );
+
+    const newItem = {
+      name: item.name,
+      value: item.value,
+      images: imageUrls.length > 0 ? imageUrls : [], // Ensure images field is always an array
+    };
+
     const docRef = await addDoc(
       collection(firestore, "users", userId, "catalogs", catalogId, "items"),
-      {
-        id: null,
-        name: Item.name,
-        value: Item.value,
-      }
+      newItem
     );
-    const itemDocRef = doc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items"),
-      docRef.id
-    );
-    await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
+
     console.log("Item successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -185,12 +205,32 @@ const createItem = async (userId, catalogId, Item) => {
 
 const fetchItems = async (userId, catalogId) => {
   try {
-    const q = query(collection(firestore, "users", userId, "catalogs", catalogId, "items"));
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    );
     const querySnapshot = await getDocs(q);
     const items = [];
-    querySnapshot.forEach((doc) => {
-      items.push(doc.data());
-    });
+
+    for (const doc of querySnapshot.docs) {
+      const itemData = doc.data();
+      const images = [];
+
+      // Fetch images for the current item
+      for (const imageUrl of itemData.images) {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const downloadURL = await uploadBlobToStorage(userId, catalogId, doc.id, blob); // Upload blob and get download URL
+        images.push(downloadURL);
+      }
+
+      // Update item data with fetched image URLs
+      itemData.images = images;
+      
+      // Add item to the array
+      items.push({ id: doc.id, ...itemData });
+    }
+
+    console.log("Fetched items:", items); // Log fetched items
     return items;
   } catch (error) {
     console.error("Error fetching item data:", error.message);
@@ -199,19 +239,32 @@ const fetchItems = async (userId, catalogId) => {
 };
 
 
-// Define createAttribute function
-const createAttribute = async (userId, catalogId, Item, Attribute) => {
+const uploadBlobToStorage = async (userId, catalogId, itemId, blob) => {
+  try {
+    const imageName = `${itemId}_${Date.now()}.jpg`; // Generate a unique image name
+    const storageRef = ref(storage, `users/${userId}/catalogs/${catalogId}/items/${itemId}/${imageName}`);
+    await uploadBytes(storageRef, blob); // Upload the image to Firebase Storage
+    const downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading blob to storage:", error.message);
+    throw error;
+  }
+};
+
+// Create Attribute
+const createAttribute = async (userId, catalogId, itemId, attribute) => {
   try {
     const docRef = await addDoc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes"),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
       {
-        id: null,
-        name: Attribute.name,
-        value: Attribute.value,
+        id: null, // Make sure id is set properly
+        name: attribute.name,
+        value: attribute.value,
       }
     );
     const itemDocRef = doc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes"),
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
       docRef.id
     );
     await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
@@ -223,15 +276,24 @@ const createAttribute = async (userId, catalogId, Item, Attribute) => {
   }
 };
 
-const fetchAttributes = async (userId, catalogId, Item) => {
+const fetchAttributes = async (userId, catalogId, itemId) => {
   try {
     const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", Item, "attributes")
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes")
     );
     const querySnapshot = await getDocs(q);
+
+    // Check if query snapshot is empty
+    if (querySnapshot.empty) {
+      console.log("No attributes found for the item.");
+      return [];
+    }
+
     const attributes = [];
     querySnapshot.forEach((doc) => {
-      attributes.push(doc.data());
+      const attributeData = doc.data();
+      console.log("Attribute Data:", attributeData); // Log the attribute data to see if it's fetched correctly
+      attributes.push({ ...attributeData, id: doc.id }); // Make sure id is included
     });
     return attributes;
   } catch (error) {
@@ -240,6 +302,8 @@ const fetchAttributes = async (userId, catalogId, Item) => {
   }
 };
 
+
+// Delete Items (No modifications needed)
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
     const q = query(
@@ -257,8 +321,10 @@ const deleteItems = async (userId, catalogId, itemId) => {
   }
 };
 
+
 export {
   auth,
+  storage,
   firestore,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
