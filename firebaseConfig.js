@@ -244,7 +244,7 @@ const createAttribute = async (userId, catalogId, itemId, attribute) => {
     const docRef = await addDoc(
       collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
       {
-        id: attribute.id, 
+        id: null, 
         name: attribute.name,
         value: attribute.value,
       }
