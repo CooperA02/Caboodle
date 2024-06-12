@@ -6,41 +6,61 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { auth, fetchAttributes } from "../firebaseConfig";
+import { auth, fetchItem } from "../firebaseConfig";
 
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   useEffect(() => {
-    const getAttributeData = async () => {
+    let isMounted = true;
+
+    const getItemData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          console.log(`Fetching attributes for user: ${user.uid}`);
-          const attributeData = await fetchAttributes(
+          console.log(`Fetching item details for user: ${user.uid}`);
+          const itemData = await fetchItem(
             user.uid,
             selectedCatalog.id,
             selectedItem.id
           );
-          setAttributes(attributeData);
+          if (isMounted) {
+            setAttributes(itemData.attributes || []);
+            setImages(itemData.images || []);
+            selectedItem.name = itemData.name; // Update the selectedItem name
+          }
         } else {
           console.log("User is not authenticated");
         }
       } catch (error) {
-        console.error("Error fetching Attributes:", error.message);
+        console.error("Error fetching item details:", error.message);
+        setError(error.message);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
-  
+
     const unsubscribe = navigation.addListener("focus", () => {
-      getAttributeData();
+      setLoading(true); // Reset loading state when the screen is focused
+      setError(null); // Reset error state when the screen is focused
+      getItemData();
     });
-  
-    return unsubscribe;
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [navigation, selectedCatalog.id, selectedItem.id]);
-  
 
   const handleAddAttribute = () => {
     navigation.navigate("CreateAttributeScreen", {
@@ -73,21 +93,54 @@ export default function ViewItemScreen({ navigation, route }) {
     navigation.goBack();
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
         <Text style={styles.goBackButtonText}>Go Back</Text>
       </TouchableOpacity>
       <Text style={styles.itemName}>{selectedItem.name}</Text>
-
+      {selectedImageIndex !== null && (
+        <Image
+          source={{ uri: images[selectedImageIndex] }}
+          style={styles.designatedImage}
+        />
+      )}
       <ScrollView style={styles.attributesContainer}>
         {attributes.map((attr) => (
           <View key={attr.id} style={styles.attributeRow}>
             <Text style={styles.attributeName}>{attr.name}</Text>
+            <Text style={styles.attributeValue}>{attr.value}</Text>
             <TouchableOpacity onPress={() => handleDeleteAttribute(attr.id)}>
               <AntDesign name="delete" size={24} color="red" />
             </TouchableOpacity>
           </View>
+        ))}
+      </ScrollView>
+      <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
+        {images.map((imageUri, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.imageContainer}
+            onPress={() => setSelectedImageIndex(index)}
+          >
+            <Image source={{ uri: imageUri }} style={styles.image} />
+          </TouchableOpacity>
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>
@@ -123,6 +176,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
+  designatedImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
   attributesContainer: {
     marginBottom: 20,
   },
@@ -137,6 +196,10 @@ const styles = StyleSheet.create({
   attributeName: {
     fontSize: 18,
   },
+  attributeValue: {
+    fontSize: 18,
+    color: "#888",
+  },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -145,6 +208,20 @@ const styles = StyleSheet.create({
   addAttributeButton: {
     backgroundColor: "#007bff",
     padding: 10,
+    borderRadius: 5,
+  },
+  imagesContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  imageContainer: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
     borderRadius: 5,
   },
 });
