@@ -20,8 +20,6 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDBMKmyPOzRtuHn1UMgV0874VcoC0W2sTA",
   authDomain: "caboodle-55dd3.firebaseapp.com",
@@ -90,7 +88,7 @@ const handleSaveProfile = async (
         isPrivate,
       },
       { merge: true }
-    ); // Use merge option to merge with existing data if it exists
+    ); 
     console.log("User profile updated successfully!");
   } catch (error) {
     console.error("Error saving user profile:", error.message);
@@ -118,13 +116,12 @@ const fetchUserData = async (userId) => {
 // Define createCatalog function
 const createCatalog = async (userId, catalog) => {
   try {
-    // Create a new catalog document with the provided catalog data including images
     const docRef = await addDoc(collection(firestore, "users", userId, "catalogs"), {
       id: null,
       name: catalog.name,
       category: catalog.category,
       description: catalog.description,
-      images: catalog.images, // Include the images field
+      images: catalog.images, 
     });
 
     // Update the newly created document with its own ID
@@ -187,7 +184,7 @@ const createItem = async (userId, catalogId, item, images) => {
     const newItem = {
       name: item.name,
       value: item.value,
-      images: imageUrls.length > 0 ? imageUrls : [], // Ensure images field is always an array
+      images: imageUrls.length > 0 ? imageUrls : [], 
     };
 
     const docRef = await addDoc(
@@ -198,39 +195,16 @@ const createItem = async (userId, catalogId, item, images) => {
     console.log("Item successfully created:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error creating Item:", error.message);
+    console.error("Error creating item:", error.message);
     throw error;
   }
 };
 
 const fetchItems = async (userId, catalogId) => {
   try {
-    const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items")
-    );
+    const q = query(collection(firestore, "users", userId, "catalogs", catalogId, "items"));
     const querySnapshot = await getDocs(q);
-    const items = [];
-
-    for (const doc of querySnapshot.docs) {
-      const itemData = doc.data();
-      const images = [];
-
-      // Fetch images for the current item
-      for (const imageUrl of itemData.images) {
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const downloadURL = await uploadBlobToStorage(userId, catalogId, doc.id, blob); // Upload blob and get download URL
-        images.push(downloadURL);
-      }
-
-      // Update item data with fetched image URLs
-      itemData.images = images;
-      
-      // Add item to the array
-      items.push({ id: doc.id, ...itemData });
-    }
-
-    console.log("Fetched items:", items); // Log fetched items
+    const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return items;
   } catch (error) {
     console.error("Error fetching item data:", error.message);
@@ -238,16 +212,28 @@ const fetchItems = async (userId, catalogId) => {
   }
 };
 
-
-const uploadBlobToStorage = async (userId, catalogId, itemId, blob) => {
+// Fetch a single item with its attributes and images
+const fetchItem = async (userId, catalogId, itemId) => {
   try {
-    const imageName = `${itemId}_${Date.now()}.jpg`; // Generate a unique image name
-    const storageRef = ref(storage, `users/${userId}/catalogs/${catalogId}/items/${itemId}/${imageName}`);
-    await uploadBytes(storageRef, blob); // Upload the image to Firebase Storage
-    const downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
-    return downloadURL;
+    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemSnap = await getDoc(itemRef);
+
+    if (!itemSnap.exists()) {
+      throw new Error("Item does not exist.");
+    }
+
+    const itemData = itemSnap.data();
+
+    // Fetch attributes
+    const attributes = await fetchItemAttributes(userId, catalogId, itemId);
+
+    return {
+      id: itemId,
+      ...itemData,
+      attributes: attributes,
+    };
   } catch (error) {
-    console.error("Error uploading blob to storage:", error.message);
+    console.error("Error fetching item data:", error.message);
     throw error;
   }
 };
@@ -258,7 +244,7 @@ const createAttribute = async (userId, catalogId, itemId, attribute) => {
     const docRef = await addDoc(
       collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
       {
-        id: null, // Make sure id is set properly
+        id: attribute.id, 
         name: attribute.name,
         value: attribute.value,
       }
@@ -292,8 +278,8 @@ const fetchAttributes = async (userId, catalogId, itemId) => {
     const attributes = [];
     querySnapshot.forEach((doc) => {
       const attributeData = doc.data();
-      console.log("Attribute Data:", attributeData); // Log the attribute data to see if it's fetched correctly
-      attributes.push({ ...attributeData, id: doc.id }); // Make sure id is included
+      console.log("Attribute Data:", attributeData); 
+      attributes.push({ ...attributeData, id: doc.id }); 
     });
     return attributes;
   } catch (error) {
@@ -302,8 +288,28 @@ const fetchAttributes = async (userId, catalogId, itemId) => {
   }
 };
 
+const fetchItemAttributes = async (userId, catalogId, itemId) => {
+  try {
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes")
+    );
+    const querySnapshot = await getDocs(q);
 
-// Delete Items (No modifications needed)
+    if (querySnapshot.empty) {
+      console.log("No attributes found for the item.");
+      return [];
+    }
+
+    const attributes = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return attributes;
+  } catch (error) {
+    console.error("Error fetching attribute data:", error.message);
+    throw error;
+  }
+};
+
+
+// Delete Items 
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
     const q = query(
@@ -338,4 +344,6 @@ export {
   deleteItems,
   createAttribute,
   fetchAttributes,
+  fetchItem, 
+  fetchItemAttributes,
 };

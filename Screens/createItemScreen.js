@@ -22,7 +22,6 @@ export default function CreateItemScreen({ navigation, route }) {
   const [selectedImages, setSelectedImages] = useState([]);
 
   const handleCreateItem = async () => {
-    // Prepare the Item data
     const newItem = {
       name: itemName,
       value: itemValue,
@@ -34,30 +33,29 @@ export default function CreateItemScreen({ navigation, route }) {
         selectedCatalog: selectedCatalog,
       });
     } catch (e) {
-      console.error("Error saving catalog data: ", e);
+      console.error("Error saving item data: ", e);
+      alert("An error occurred while creating the item. Please try again.");
     }
-  };
+  };  
 
   const pickImage = async () => {
-    // Request permissions to use the camera
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera permissions to make this work!");
       return;
     }
-
-    // Open Camera App
+  
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5, // Adjust quality to reduce size
     });
-
+  
     if (!result.canceled) {
       setSelectedImages([...selectedImages, result.assets[0].uri]);
     }
-  };
+  };  
 
   return (
     <View style={styles.container}>
