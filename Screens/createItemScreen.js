@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, createItem } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
+import { auth, createItem, addToPublicItemList } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
 
 export default function CreateItemScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -26,9 +26,17 @@ export default function CreateItemScreen({ navigation, route }) {
       name: itemName,
       value: itemValue,
     };
-  
+
     try {
-      await createItem(auth.currentUser.uid, selectedCatalog.id, newItem, selectedImages);
+      await createItem(
+        auth.currentUser.uid,
+        selectedCatalog.id,
+        newItem,
+        selectedImages
+      );
+      if (selectedCatalog.isPublic) {
+        await addToPublicItemList(selectedCatalog.id, newItem);
+      }
       navigation.navigate("ViewCatalogScreen", {
         selectedCatalog: selectedCatalog,
       });
@@ -36,7 +44,7 @@ export default function CreateItemScreen({ navigation, route }) {
       console.error("Error saving item data: ", e);
       alert("An error occurred while creating the item. Please try again.");
     }
-  };  
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -44,18 +52,18 @@ export default function CreateItemScreen({ navigation, route }) {
       alert("Sorry, we need camera permissions to make this work!");
       return;
     }
-  
+
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5, // Adjust quality to reduce size
     });
-  
+
     if (!result.canceled) {
       setSelectedImages([...selectedImages, result.assets[0].uri]);
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>

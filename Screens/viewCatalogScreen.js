@@ -9,7 +9,12 @@ import {
   Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { auth, fetchItems, deleteItems } from "../firebaseConfig";
+import {
+  auth,
+  fetchItems,
+  deleteItems,
+  deletePublicItems,
+} from "../firebaseConfig";
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;

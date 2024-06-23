@@ -12,27 +12,21 @@ import {
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import {
-  auth,
-  fetchCatalogs,
-  deleteCatalogs,
-  deletePublicCatalogs,
-} from "../firebaseConfig";
+import { auth, createChat, fetchChats } from "../firebaseConfig";
 
 const windowWidth = Dimensions.get("window").width;
 
-export default function Catalogs({ navigation, route }) {
-  const [catalogs, setCatalogs] = useState([]);
-  const [selectedCatalog, setSelectedCatalog] = useState(null);
-  const [filterMenuVisible, setFilterMenuVisible] = useState(false);
+export default function ChatListScreen({ navigation, route }) {
+  const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
 
   useEffect(() => {
-    const getCatalogData = async () => {
+    const getChatData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          const catalogData = await fetchCatalogs(user.uid);
-          setCatalogs(catalogData);
+          const chatData = await fetchChats(user.uid);
+          setChats(chatData);
         } else {
           console.log("User is not authenticated");
         }
@@ -42,53 +36,19 @@ export default function Catalogs({ navigation, route }) {
     };
 
     const unsubscribe = navigation.addListener("focus", () => {
-      getCatalogData();
+      getChatData();
     });
 
     return unsubscribe;
   }, [navigation, route]);
 
-  const handleCreateNewCatalog = () => {
-    navigation.navigate("CreateCatalogScreen");
+  const handleCreateNewChat = async () => {
+    const newChat = await createChat(auth.currentUser.uid, null, "Hello!");
   };
 
-  const handleCatalogSelection = (catalog) => {
-    setSelectedCatalog(catalog);
-    navigation.navigate("ViewCatalogScreen", { selectedCatalog: catalog });
-  };
-
-  const handleToggleFilterMenu = () => {
-    setFilterMenuVisible(!filterMenuVisible);
-  };
-
-  const handleFilterCatalogs = () => {
-    // Logic to filter catalogs
-  };
-
-  const handleLongPress = (catalog) => {
-    Alert.alert(
-      "Delete Catalog",
-      "Are you sure you want to delete this catalog?",
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },
-        { text: "OK", onPress: () => handleDeleteCatalog(catalog) },
-      ],
-      { cancelable: false }
-    );
-  };
-
-  const handleDeleteCatalog = (catalogToDelete) => {
-    deleteCatalogs(auth.currentUser.uid, catalogToDelete.id);
-    if (catalogToDelete.isPublic) {
-      deletePublicCatalogs(auth.currentUser.uid, catalogToDelete.id);
-    }
-    setCatalogs(
-      catalogs.filter((catalog) => catalog.id !== catalogToDelete.id)
-    );
+  const handleChatSelection = (chat) => {
+    setSelectedChat(chat);
+    navigation.navigate("chatScreen", { selectedChat: chat });
   };
 
   return (

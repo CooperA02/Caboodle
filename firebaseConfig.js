@@ -88,7 +88,7 @@ const handleSaveProfile = async (
         isPrivate,
       },
       { merge: true }
-    ); 
+    );
     console.log("User profile updated successfully!");
   } catch (error) {
     console.error("Error saving user profile:", error.message);
@@ -116,16 +116,23 @@ const fetchUserData = async (userId) => {
 // Define createCatalog function
 const createCatalog = async (userId, catalog) => {
   try {
-    const docRef = await addDoc(collection(firestore, "users", userId, "catalogs"), {
-      id: null,
-      name: catalog.name,
-      category: catalog.category,
-      description: catalog.description,
-      images: catalog.images, 
-    });
+    const docRef = await addDoc(
+      collection(firestore, "users", userId, "catalogs"),
+      {
+        id: null,
+        name: catalog.name,
+        category: catalog.category,
+        description: catalog.description,
+        images: catalog.images,
+        isPublic: catalog.isPublic,
+      }
+    );
 
     // Update the newly created document with its own ID
-    const catalogDocRef = doc(collection(firestore, "users", userId, "catalogs"), docRef.id);
+    const catalogDocRef = doc(
+      collection(firestore, "users", userId, "catalogs"),
+      docRef.id
+    );
     await setDoc(catalogDocRef, { id: docRef.id }, { merge: true });
 
     console.log("Catalog successfully created:", docRef.id);
@@ -171,10 +178,13 @@ const createItem = async (userId, catalogId, item, images) => {
   try {
     const imageUrls = await Promise.all(
       images.map(async (imageUri) => {
-        const imageName = imageUri.split('/').pop(); // Get the image name from the URI
+        const imageName = imageUri.split("/").pop(); // Get the image name from the URI
         const response = await fetch(imageUri); // Fetch the image data
         const blob = await response.blob(); // Convert the fetched data into a Blob
-        const storageRef = ref(storage, `users/${userId}/catalogs/${catalogId}/items/${item.name}/${imageName}`);
+        const storageRef = ref(
+          storage,
+          `users/${userId}/catalogs/${catalogId}/items/${item.name}/${imageName}`
+        );
         await uploadBytes(storageRef, blob); // Upload the image to Firebase Storage
         const downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
         return downloadURL;
@@ -184,7 +194,7 @@ const createItem = async (userId, catalogId, item, images) => {
     const newItem = {
       name: item.name,
       value: item.value,
-      images: imageUrls.length > 0 ? imageUrls : [], 
+      images: imageUrls.length > 0 ? imageUrls : [],
     };
 
     const docRef = await addDoc(
@@ -202,9 +212,14 @@ const createItem = async (userId, catalogId, item, images) => {
 
 const fetchItems = async (userId, catalogId) => {
   try {
-    const q = query(collection(firestore, "users", userId, "catalogs", catalogId, "items"));
+    const q = query(
+      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    );
     const querySnapshot = await getDocs(q);
-    const items = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const items = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     return items;
   } catch (error) {
     console.error("Error fetching item data:", error.message);
@@ -215,7 +230,15 @@ const fetchItems = async (userId, catalogId) => {
 // Fetch a single item with its attributes and images
 const fetchItem = async (userId, catalogId, itemId) => {
   try {
-    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemRef = doc(
+      firestore,
+      "users",
+      userId,
+      "catalogs",
+      catalogId,
+      "items",
+      itemId
+    );
     const itemSnap = await getDoc(itemRef);
 
     if (!itemSnap.exists()) {
@@ -242,15 +265,33 @@ const fetchItem = async (userId, catalogId, itemId) => {
 const createAttribute = async (userId, catalogId, itemId, attribute) => {
   try {
     const docRef = await addDoc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
       {
-        id: null, 
+        id: null,
         name: attribute.name,
         value: attribute.value,
       }
     );
     const itemDocRef = doc(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes"),
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
       docRef.id
     );
     await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
@@ -265,7 +306,16 @@ const createAttribute = async (userId, catalogId, itemId, attribute) => {
 const fetchAttributes = async (userId, catalogId, itemId) => {
   try {
     const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes")
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      )
     );
     const querySnapshot = await getDocs(q);
 
@@ -278,8 +328,8 @@ const fetchAttributes = async (userId, catalogId, itemId) => {
     const attributes = [];
     querySnapshot.forEach((doc) => {
       const attributeData = doc.data();
-      console.log("Attribute Data:", attributeData); 
-      attributes.push({ ...attributeData, id: doc.id }); 
+      console.log("Attribute Data:", attributeData);
+      attributes.push({ ...attributeData, id: doc.id });
     });
     return attributes;
   } catch (error) {
@@ -291,7 +341,16 @@ const fetchAttributes = async (userId, catalogId, itemId) => {
 const fetchItemAttributes = async (userId, catalogId, itemId) => {
   try {
     const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes")
+      collection(
+        firestore,
+        "users",
+        userId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      )
     );
     const querySnapshot = await getDocs(q);
 
@@ -300,7 +359,10 @@ const fetchItemAttributes = async (userId, catalogId, itemId) => {
       return [];
     }
 
-    const attributes = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const attributes = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     return attributes;
   } catch (error) {
     console.error("Error fetching attribute data:", error.message);
@@ -308,8 +370,7 @@ const fetchItemAttributes = async (userId, catalogId, itemId) => {
   }
 };
 
-
-// Delete Items 
+// Delete Items
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
     const q = query(
@@ -327,6 +388,177 @@ const deleteItems = async (userId, catalogId, itemId) => {
   }
 };
 
+const addToPublicCatalogList = async (userId, name, catalog, catalogId) => {
+  try {
+    const docRef = await addDoc(collection(firestore, "publicCatalogs"), {
+      publicCatalogId: null,
+      userId: userId,
+      userName: name,
+      catalogId: catalogId,
+      catalogName: catalog.name,
+      catalogCategory: catalog.category,
+      catalogDescription: catalog.description,
+      catalogImages: catalog.images,
+    });
+
+    const catalogDocRef = doc(
+      collection(firestore, "publicCatalogs"),
+      docRef.id
+    );
+    await setDoc(
+      catalogDocRef,
+      { publicCatalogId: docRef.id },
+      { merge: true }
+    );
+
+    console.log("Catalog successfully added to public list:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding catalog to public list:", error.message);
+    throw error;
+  }
+};
+
+const fetchPublicCatalogs = async () => {
+  try {
+    const q = query(collection(firestore, "publicCatalogs"));
+    const querySnapshot = await getDocs(q);
+    const publicCatalogs = [];
+    querySnapshot.forEach((doc) => {
+      publicCatalogs.push(doc.data());
+    });
+    return publicCatalogs;
+  } catch (error) {
+    console.error("Error fetching public catalog data:", error.message);
+    throw error;
+  }
+};
+
+const deletePublicCatalogs = async (userId, catalogId) => {
+  try {
+    const q = query(collection(firestore, "publicCatalogs"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().userId === userId && doc.data().catalogId === catalogId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting public catalog data:", error.message);
+    throw error;
+  }
+};
+
+const addToPublicItemList = async (catalogId, item) => {
+  try {
+    const docRef = await addDoc(
+      collection(firestore, "publicCatalogs", catalogId, "publicItems"),
+      {
+        publicItemId: null,
+        itemName: item.name,
+        itemValue: item.value,
+        itemImages: item.images,
+      }
+    );
+
+    const itemDocRef = doc(
+      collection(firestore, "publicCatalogs", catalogId, "publicItems"),
+      docRef.id
+    );
+    await setDoc(itemDocRef, { publicItemId: docRef.id }, { merge: true });
+    console.log("Item successfully added to public list:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding item to public list:", error.message);
+    throw error;
+  }
+};
+
+const fetchPublicItems = async (catalogId) => {
+  try {
+    const q = query(
+      collection(firestore, "publicCatalogs", catalogId, "publicItems")
+    );
+    const querySnapshot = await getDocs(q);
+    const publicItems = [];
+    querySnapshot.forEach((doc) => {
+      publicItems.push(doc.data());
+    });
+    return publicItems;
+  } catch (error) {
+    console.error("Error fetching public item data:", error.message);
+    throw error;
+  }
+};
+
+const deletePublicItems = async (userId, catalogId, itemId) => {
+  try {
+    const q = query(
+      collection(firestore, "publicCatalogs", catalogId, "publicItems")
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().id === itemId) {
+        deleteDoc(doc.ref);
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting public item data:", error.message);
+    throw error;
+  }
+};
+
+const createChat = async (user1Id, user2Id, name1, name2, message) => {
+  try {
+    const docRef = await addDoc(collection(firestore, "chats"), {
+      chatId: null,
+      user1Id: user1Id,
+      user2Id: user2Id,
+      name1: name1,
+      name2: name2,
+      messageSender: name1,
+      messages: message,
+    });
+
+    const chatDocRef = doc(collection(firestore, "chats"), docRef.id);
+    await setDoc(chatDocRef, { chatId: docRef.id }, { merge: true });
+
+    console.log("Chat successfully created:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating chat:", error.message);
+    throw error;
+  }
+};
+
+const addMessage = async (chatId, name, message) => {
+  try {
+    const chatRef = doc(firestore, "chats", chatId);
+    await setDoc(chatRef, { messageSender: name }, { merge: true });
+    await setDoc(chatRef, { messages: message }, { merge: true });
+    console.log("Message successfully added to chat:", chatId);
+  } catch (error) {
+    console.error("Error adding message to chat:", error.message);
+    throw error;
+  }
+};
+
+const fetchChats = async (userId) => {
+  try {
+    const q = query(collection(firestore, "chats"));
+    const querySnapshot = await getDocs(q);
+    const chats = [];
+    querySnapshot.forEach((doc) => {
+      if (doc.data().name1 === userId || doc.data().name2 === userId) {
+        chats.push(doc.data());
+      }
+    });
+    return chats;
+  } catch (error) {
+    console.error("Error fetching chat data:", error.message);
+    throw error;
+  }
+};
 
 export {
   auth,
@@ -344,6 +576,15 @@ export {
   deleteItems,
   createAttribute,
   fetchAttributes,
-  fetchItem, 
+  fetchItem,
   fetchItemAttributes,
+  addToPublicCatalogList,
+  fetchPublicCatalogs,
+  deletePublicCatalogs,
+  addToPublicItemList,
+  fetchPublicItems,
+  deletePublicItems,
+  createChat,
+  addMessage,
+  fetchChats,
 };

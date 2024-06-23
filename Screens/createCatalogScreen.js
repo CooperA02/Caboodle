@@ -12,7 +12,13 @@ import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
 import Footer from "../Components/footer";
-import { auth, createCatalog, storage } from "../firebaseConfig";
+import {
+  auth,
+  createCatalog,
+  storage,
+  addToPublicCatalogList,
+  fetchUserData,
+} from "../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function CreateCatalogScreen({ navigation }) {
@@ -20,6 +26,7 @@ export default function CreateCatalogScreen({ navigation }) {
   const [catalogCategory, setCatalogCategory] = useState("");
   const [catalogDescription, setCatalogDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
+  const [isPublic, setIsPrivate] = useState(false);
 
   const uploadImageAsync = async (uri) => {
     try {
@@ -48,10 +55,20 @@ export default function CreateCatalogScreen({ navigation }) {
         category: catalogCategory,
         description: catalogDescription,
         images: imageUrls, // Add the image URLs to the new catalog
+        isPublic: isPublic,
       };
 
       try {
-        await createCatalog(auth.currentUser.uid, newCatalog);
+        const catalogId = await createCatalog(auth.currentUser.uid, newCatalog);
+        if (isPublic) {
+          const userData = await fetchUserData(auth.currentUser.uid);
+          await addToPublicCatalogList(
+            auth.currentUser.uid,
+            userData.username,
+            newCatalog,
+            catalogId
+          );
+        }
         navigation.navigate("Catalogs", {});
       } catch (e) {
         console.error("Error saving catalog data: ", e);
@@ -120,6 +137,20 @@ export default function CreateCatalogScreen({ navigation }) {
           multiline={true}
           style={styles.descriptionInput}
         />
+        <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>Public Catalog</Text>
+          <TouchableOpacity
+            style={[
+              styles.switchButton,
+              isPublic ? styles.switchButtonOn : null,
+            ]}
+            onPress={() => setIsPrivate(!isPublic)}
+          >
+            <Text style={styles.switchButtonText}>
+              {isPublic ? "ON" : "OFF"}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.cancelButton}
@@ -219,5 +250,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  switchLabel: {
+    flex: 1,
+    fontSize: 16,
+  },
+  switchButton: {
+    padding: 5,
+    backgroundColor: "#ddd",
+    borderRadius: 10,
+  },
+  switchButtonOn: {
+    backgroundColor: "#007bff",
+  },
+  switchButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });

@@ -1,29 +1,55 @@
 // SearchCollectionsScreen.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Image } from 'react-native';
-import { AntDesign, Entypo } from '@expo/vector-icons';
-import Header from '../Components/header';
-import Footer from '../Components/footer';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  Image,
+} from "react-native";
+import { AntDesign, Entypo } from "@expo/vector-icons";
+import Header from "../Components/header";
+import Footer from "../Components/footer";
+import { auth, fetchPublicCatalogs } from "../firebaseConfig";
 
-const windowWidth = Dimensions.get('window').width;
+const windowWidth = Dimensions.get("window").width;
 
-export default function SearchCatalogsScreen({ navigation }) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function SearchCatalogsScreen({ navigation, route }) {
+  const [catalogs, setCatalogs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const recommendedCatalogs = [
-    { id: 1, name: 'Recommended Catalog 1' },
-    { id: 2, name: 'Recommended Catalog 2' },
-    { id: 3, name: 'Recommended Catalog 3' },
-    { id: 4, name: 'Recommended Catalog 4' },
-  ];
+  useEffect(() => {
+    const getCatalogData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const catalogData = await fetchPublicCatalogs();
+          setCatalogs(catalogData);
+        } else {
+          console.log("User is not authenticated");
+        }
+      } catch (error) {
+        console.error("Error fetching Catalog data:", error.message);
+      }
+    };
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      getCatalogData();
+    });
+
+    return unsubscribe;
+  }, [navigation, route]);
 
   const handleCatalogSelection = (catalog) => {
-    navigation.navigate('ViewCatalogScreen', { selectedCatalog: catalog });
+    navigation.navigate("ViewCatalogScreen", { selectedCatalog: catalog });
   };
 
   const handleSearch = () => {
     // Implement search functionality here
-    console.log('Searching for:', searchQuery);
+    console.log("Searching for:", searchQuery);
   };
 
   return (
@@ -44,14 +70,18 @@ export default function SearchCatalogsScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Recommended Catalogs</Text>
         <ScrollView style={styles.catalogsContainer}>
           <View style={styles.row}>
-            {recommendedCatalogs.map((catalog) => (
+            {catalogs.map((catalog) => (
               <TouchableOpacity
                 key={catalog.id}
                 style={styles.catalogItem}
                 onPress={() => handleCatalogSelection(catalog)}
               >
-                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.catalogImage} />
-                <Text style={styles.catalogName}>{catalog.name}</Text>
+                <Image
+                  source={{ uri: "https://via.placeholder.com/150" }}
+                  style={styles.catalogImage}
+                />
+                <Text style={styles.catalogName}>{catalog.catalogName}</Text>
+                <Text>{catalog.userName}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -65,21 +95,21 @@ export default function SearchCatalogsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   searchBar: {
     flex: 1,
     height: 40,
-    borderColor: 'gray',
+    borderColor: "gray",
     borderWidth: 1,
     paddingLeft: 10,
     borderTopLeftRadius: 5,
@@ -88,44 +118,44 @@ const styles = StyleSheet.create({
   searchButton: {
     height: 40,
     width: 40,
-    backgroundColor: 'gray',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "gray",
+    justifyContent: "center",
+    alignItems: "center",
     borderTopRightRadius: 5,
     borderBottomRightRadius: 5,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   catalogsContainer: {
-    width: '100%',
+    width: "100%",
   },
   row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     paddingHorizontal: 5,
   },
   catalogItem: {
-    width: '48%', // Set width to occupy half of the row
+    width: "48%", // Set width to occupy half of the row
     aspectRatio: 1, // Maintain aspect ratio to create a square
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
     marginVertical: 5,
     borderRadius: 10,
     padding: 10,
   },
   catalogImage: {
-    width: '70%',
-    height: '70%',
+    width: "70%",
+    height: "70%",
     marginBottom: 10,
   },
   catalogName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
