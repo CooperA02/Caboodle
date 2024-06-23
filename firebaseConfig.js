@@ -373,15 +373,17 @@ const fetchItemAttributes = async (userId, catalogId, itemId) => {
 // Delete Items
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
-    const q = query(
-      collection(firestore, "users", userId, "catalogs", catalogId, "items")
+    const itemRef = doc(
+      firestore,
+      "users",
+      userId,
+      "catalogs",
+      catalogId,
+      "items",
+      itemId
     );
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      if (doc.data().id === itemId) {
-        deleteDoc(doc.ref);
-      }
-    });
+    await deleteDoc(itemRef);
+    console.log("Item successfully deleted:", itemId);
   } catch (error) {
     console.error("Error deleting item data:", error.message);
     throw error;

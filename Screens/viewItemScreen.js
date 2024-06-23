@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -17,7 +18,7 @@ export default function ViewItemScreen({ navigation, route }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Initialize with 0 to show the first image
 
   useEffect(() => {
     let isMounted = true;
@@ -115,23 +116,13 @@ export default function ViewItemScreen({ navigation, route }) {
         <Text style={styles.goBackButtonText}>Go Back</Text>
       </TouchableOpacity>
       <Text style={styles.itemName}>{selectedItem.name}</Text>
-      {selectedImageIndex !== null && (
+      {images.length > 0 && (
         <Image
           source={{ uri: images[selectedImageIndex] }}
           style={styles.designatedImage}
+          resizeMode="contain" // Ensures the image is not squished
         />
       )}
-      <ScrollView style={styles.attributesContainer}>
-        {attributes.map((attr) => (
-          <View key={attr.id} style={styles.attributeRow}>
-            <Text style={styles.attributeName}>{attr.name}</Text>
-            <Text style={styles.attributeValue}>{attr.value}</Text>
-            <TouchableOpacity onPress={() => handleDeleteAttribute(attr.id)}>
-              <AntDesign name="delete" size={24} color="red" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
       <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
         {images.map((imageUri, index) => (
           <TouchableOpacity
@@ -141,6 +132,17 @@ export default function ViewItemScreen({ navigation, route }) {
           >
             <Image source={{ uri: imageUri }} style={styles.image} />
           </TouchableOpacity>
+        ))}
+      </ScrollView>
+      <ScrollView style={styles.attributesContainer}>
+        {attributes.map((attr) => (
+          <View key={attr.id} style={styles.attributeRow}>
+            <Text style={styles.attributeName}>{attr.name}</Text>
+            <Text style={styles.attributeValue}>{attr.value}</Text>
+            <TouchableOpacity onPress={() => handleDeleteAttribute(attr.id)}>
+              <AntDesign name="delete" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>
@@ -177,10 +179,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   designatedImage: {
-    width: "100%",
-    height: 200,
+    width: "100%", // Fill almost the full width of the screen
+    height: 300, // Increased height for better display
     borderRadius: 5,
     marginBottom: 20,
+    alignSelf: "center", // Center the image horizontally
   },
   attributesContainer: {
     marginBottom: 20,

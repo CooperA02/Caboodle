@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebaseConfig'; // Import the Firebase auth object and authentication functions
 import { useNavigation } from '@react-navigation/native';
 
@@ -39,30 +39,35 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <View style={styles.header}>
         <Text style={styles.caboodleText}>Caboodle</Text>
         <Text style={styles.collectionCatalogsText}>Collection Catalogs</Text>
       </View>
       <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCompleteType="email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          secureTextEntry
-          autoCapitalize="none"
-          autoCompleteType="password"
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCompleteType="email"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry
+            autoCapitalize="none"
+            autoCompleteType="password"
+            value={password}
+            onChangeText={setPassword}
+          />
+        </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleSignIn}>
             <Text style={styles.buttonText}>Sign In</Text>
@@ -74,21 +79,23 @@ export default function SignUpScreen() {
         {/* Display error message if there is an error */}
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start', 
     alignItems: 'center',
     paddingHorizontal: 20,
     backgroundColor: '#fff',
   },
   header: {
-    flex: 1,
-    justifyContent: 'center',
+    position: 'absolute', 
+    top: 120, 
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
   caboodleText: {
@@ -101,8 +108,11 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   form: {
-    flex: 1,
+    marginTop: 150, 
     width: '100%',
+  },
+  inputContainer: {
+    marginTop: 150, 
   },
   input: {
     height: 40,
@@ -122,8 +132,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
-    width: '45%', 
-    height: '50%',
+    width: '45%',
+    height: 40, // Fixed height for buttons
     justifyContent: 'center',
   },
   buttonText: {

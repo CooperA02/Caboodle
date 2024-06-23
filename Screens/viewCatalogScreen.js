@@ -35,12 +35,10 @@ export default function ViewCatalogScreen({ navigation, route }) {
       }
     };
 
-    const unsubscribe = navigation.addListener("focus", () => {
-      getItemData();
-    });
+    getItemData();
 
-    return unsubscribe;
-  }, [navigation, selectedCatalog.id]);
+    return () => {};
+  }, [selectedCatalog.id]);
 
   const handleAddItem = () => {
     navigation.navigate("CreateItemScreen", {
@@ -69,8 +67,8 @@ export default function ViewCatalogScreen({ navigation, route }) {
 
   const handleDelete = async (itemId) => {
     try {
-      deleteItems(auth.currentUser.uid, selectedCatalog.id, itemId);
-      setItems(items.filter((item) => item.id !== itemId));
+      await deleteItems(auth.currentUser.uid, selectedCatalog.id, itemId); // Await deletion
+      setItems(items.filter((item) => item.id !== itemId)); // Update local state after deletion
     } catch (error) {
       console.error("Error deleting item data:", error.message);
     }
