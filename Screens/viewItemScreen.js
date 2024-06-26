@@ -90,6 +90,14 @@ export default function ViewItemScreen({ navigation, route }) {
     );
   };
 
+  const handleEditAttribute = (attributeId) => {
+    navigation.navigate("EditAttributeScreen", {
+      attributeId,
+      selectedCatalog: selectedCatalog,
+      selectedItem: selectedItem,
+    });
+  };
+
   const handleGoBack = () => {
     navigation.goBack();
   };
@@ -141,6 +149,9 @@ export default function ViewItemScreen({ navigation, route }) {
             <Text style={styles.attributeValue}>{attr.value}</Text>
             <TouchableOpacity onPress={() => handleDeleteAttribute(attr.id)}>
               <AntDesign name="delete" size={24} color="red" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleEditAttribute(attr.id)}>
+              <AntDesign name="edit" size={24} color="blue" />
             </TouchableOpacity>
           </View>
         ))}

@@ -303,6 +303,45 @@ const createAttribute = async (userId, catalogId, itemId, attribute) => {
   }
 };
 
+const updateAttribute = async (userId, catalogId, itemId, attributeId, updatedAttribute) => {
+  try {
+    // Fetch the current attribute document
+    const attributeDocRef = doc(
+      firestore,
+      "users",
+      userId,
+      "catalogs",
+      catalogId,
+      "items",
+      itemId,
+      "attributes",
+      attributeId
+    );
+    const attributeDoc = await getDoc(attributeDocRef);
+
+    if (!attributeDoc.exists()) {
+      console.error("Attribute does not exist.");
+      throw new Error("Attribute does not exist.");
+    }
+
+    // Prepare the updated attribute data
+    const updatedData = {
+     ...attributeDoc.data(),
+     ...updatedAttribute,
+    };
+
+    // Update the attribute document with the new data
+    await setDoc(attributeDocRef, updatedData, { merge: true });
+
+    console.log("Attribute successfully updated:", attributeId);
+    return attributeId;
+  } catch (error) {
+    console.error("Error updating Attribute:", error.message);
+    throw error;
+  }
+};
+
+
 const fetchAttributes = async (userId, catalogId, itemId) => {
   try {
     const q = query(
@@ -577,6 +616,7 @@ export {
   fetchItems,
   deleteItems,
   createAttribute,
+  updateAttribute,
   fetchAttributes,
   fetchItem,
   fetchItemAttributes,
