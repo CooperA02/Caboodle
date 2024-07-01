@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -11,6 +10,8 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { auth, fetchItem } from "../firebaseConfig";
+import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar } from 'react-native-paper';
+
 
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
@@ -110,12 +111,15 @@ export default function ViewItemScreen({ navigation, route }) {
     );
   }
 
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
-        <Text style={styles.goBackButtonText}>Go Back</Text>
-      </TouchableOpacity>
-      <Text style={styles.itemName}>{selectedItem.name}</Text>
+    <>
+      <RNPText variant="headlineMedium">
+        {selectedCatalog.name}
+      </RNPText>
+      <RNPText variant="displaySmall">
+        {selectedItem.name}
+      </RNPText>
       {images.length > 0 && (
         <Image
           source={{ uri: images[selectedImageIndex] }}
@@ -153,7 +157,8 @@ export default function ViewItemScreen({ navigation, route }) {
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
-    </View>
+
+    </>
   );
 }
 
@@ -180,13 +185,13 @@ const styles = StyleSheet.create({
   },
   designatedImage: {
     width: "100%", // Fill almost the full width of the screen
-    height: 300, // Increased height for better display
+    height: 400, // Increased height for better display
     borderRadius: 5,
     marginBottom: 20,
     alignSelf: "center", // Center the image horizontally
   },
   attributesContainer: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   attributeRow: {
     flexDirection: "row",
@@ -207,11 +212,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginTop: 0,
+    marginBottom: 0,
   },
   addAttributeButton: {
     backgroundColor: "#007bff",
     padding: 10,
     borderRadius: 5,
+    marginLeft: 30,
+    marginBottom: 5, //temporary fix until button is replaced
   },
   imagesContainer: {
     flexDirection: "row",

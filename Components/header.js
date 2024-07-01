@@ -1,3 +1,4 @@
+//Header is only still here temporarily while I finish integration of Appbar replacement
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons'; // Import icon components from Expo vector icons

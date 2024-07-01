@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import Header from "../Components/header";
-import Footer from "../Components/footer";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, createAttribute } from "../firebaseConfig";
 
@@ -73,7 +73,7 @@ export default function CreateAttributeScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Footer />
+
     </View>
   );
 }

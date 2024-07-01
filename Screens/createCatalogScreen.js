@@ -11,7 +11,17 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
-import Footer from "../Components/footer";
+import {
+  Searchbar,
+  Avatar,
+  Button,
+  Card,
+  Chip,
+  IconButton,
+  Paragraph,
+  Text as RNPText,
+  Appbar,
+} from 'react-native-paper';
 import {
   auth,
   createCatalog,
@@ -74,7 +84,7 @@ export default function CreateCatalogScreen({ navigation }) {
         console.error("Error saving catalog data: ", e);
       }
     } catch (error) {
-      console.error("Error during catalog creation process: ", error);
+      console.error("Error while creating catalog: ", error);
     }
   };
 
@@ -98,8 +108,12 @@ export default function CreateCatalogScreen({ navigation }) {
   };
 
   return (
+    <>
+    <Appbar.Header>
+      <Appbar.Content title="Create New Catalog"/>
+    </Appbar.Header>
     <View style={styles.container}>
-      <Header navigation={navigation} title="Create New Catalog" />
+
       <ScrollView style={styles.content}>
         <View style={styles.buttonWrapper}>
           <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
@@ -166,8 +180,9 @@ export default function CreateCatalogScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Footer />
+
     </View>
+    </>
   );
 }
 

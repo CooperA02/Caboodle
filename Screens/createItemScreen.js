@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -11,9 +10,10 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Header from "../Components/header";
-import Footer from "../Components/footer";
+import { Text, Appbar } from 'react-native-paper';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth, createItem, addToPublicItemList } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
+
 
 export default function CreateItemScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -65,9 +65,14 @@ export default function CreateItemScreen({ navigation, route }) {
     }
   };
 
+
+  //...SPRINT 3 TODO list
   return (
+    <>
+    <Appbar.Header>
+      <Appbar.Content title="Create New Catalog"/>
+    </Appbar.Header>
     <View style={styles.container}>
-      <Header navigation={navigation} title="Create New Item" />
       <ScrollView style={styles.content}>
         <View style={styles.buttonWrapper}>
           <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
@@ -113,8 +118,8 @@ export default function CreateItemScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Footer />
     </View>
+    </>
   );
 }
 

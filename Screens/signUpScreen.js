@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebaseConfig'; // Import the Firebase auth object and authentication functions
 import { useNavigation } from '@react-navigation/native';
+
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -16,7 +17,7 @@ export default function SignUpScreen() {
         // Signed in
         const user = userCredential.user;
         console.log('Signed in:', user);
-        navigation.navigate('UserProfile'); // Navigate to UserProfileScreen upon successful sign in
+        navigation.navigate('MainApp', { screen: 'Search Catalogs' }); //Navigates to Search upon successful sign in
       })
       .catch((error) => {
         console.error('Error signing in:', error);
@@ -30,7 +31,7 @@ export default function SignUpScreen() {
         // Signed up
         const user = userCredential.user;
         console.log('Signed up:', user);
-        navigation.navigate('UserProfile'); // Navigate to UserProfileScreen upon successful sign up
+        navigation.navigate('MainApp', { screen: 'Profile' }); // Navigates to UserProfileScreen upon successful sign up
       })
       .catch((error) => {
         console.error('Error signing up:', error);
@@ -43,9 +44,13 @@ export default function SignUpScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={{ flex: 1 }}>
       <View style={styles.header}>
-        <Text style={styles.caboodleText}>Caboodle</Text>
-        <Text style={styles.collectionCatalogsText}>Collection Catalogs</Text>
+      <Image
+          source={require('../assets/logo-png.png')} 
+          style={styles.logo}
+        />
       </View>
       <View style={styles.form}>
         <View style={styles.inputContainer}>
@@ -79,6 +84,8 @@ export default function SignUpScreen() {
         {/* Display error message if there is an error */}
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
+      </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -93,12 +100,12 @@ const styles = StyleSheet.create({
   },
   header: {
     position: 'absolute', 
-    top: 120, 
+    top: 80, // Lowered from 120 to move the logo higher up
     left: 0,
     right: 0,
     alignItems: 'center',
   },
-  caboodleText: {
+  /*caboodleText: {
     fontSize: 36,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -106,7 +113,7 @@ const styles = StyleSheet.create({
   collectionCatalogsText: {
     fontSize: 24,
     color: '#555',
-  },
+  },*/
   form: {
     marginTop: 150, 
     width: '100%',
@@ -146,5 +153,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 10,
     alignSelf: 'center',
+  },
+  logo: {
+    width: 250,
+    height: 200,
+    marginBottom: 10,
   },
 });

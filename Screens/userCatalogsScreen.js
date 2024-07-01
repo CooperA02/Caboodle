@@ -10,14 +10,20 @@ import {
   Alert,
 } from "react-native";
 import { AntDesign, Entypo } from "@expo/vector-icons";
-import Header from "../Components/header";
-import Footer from "../Components/footer";
 import {
   auth,
   fetchCatalogs,
   deleteCatalogs,
   deletePublicCatalogs,
 } from "../firebaseConfig";
+import {
+  Card,
+  IconButton,
+  Paragraph,
+  Text as RNPText,
+  Appbar,
+} from 'react-native-paper';
+
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -49,12 +55,15 @@ export default function Catalogs({ navigation, route }) {
   }, [navigation, route]);
 
   const handleCreateNewCatalog = () => {
-    navigation.navigate("CreateCatalogScreen");
+    navigation.navigate("Create Catalog", { screen: "CreateCatalogScreen", params: { modalPresentationStyle: "pageSheet" } });
   };
 
   const handleCatalogSelection = (catalog) => {
     setSelectedCatalog(catalog);
-    navigation.navigate("ViewCatalogScreen", { selectedCatalog: catalog });
+    navigation.navigate("View Catalog", {
+      selectedCatalog: catalog,
+      modalPresentationStyle: "pageSheet"
+    });
   };
 
   const handleToggleFilterMenu = () => {
@@ -91,82 +100,38 @@ export default function Catalogs({ navigation, route }) {
     );
   };
 
+
   return (
-    <View style={styles.container}>
-      <Header navigation={navigation} title="Your Catalogs" />
-      <View style={styles.content}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.createCatalogButton, { flex: 2 }]}
-            onPress={handleCreateNewCatalog}
-          >
-            <Text style={styles.createCatalogButtonText}>
-              Create New Catalog +
-            </Text>
-            <AntDesign name="pluscircleo" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterButton, { flex: 1 }]}
-            onPress={handleToggleFilterMenu}
-          >
-            <Entypo name="select-arrows" size={24} color="black" />
-          </TouchableOpacity>
+    <>
+    {/* Redesigned catalog screen.  I'm open to suggestions if anyone has an idea. */}
+    <>
+      <Appbar.Header>
+        <Appbar.Content title="My Catalogs"/>
+          <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
+      </Appbar.Header>
+      <View style={styles.container}>
+        <View style={styles.content}>
+
+          <ScrollView style={styles.catalogsContainer}>
+            <View style={styles.row}>
+              {catalogs.map((catalog) => (
+                <Card key={catalog.id} style={styles.card} mode="elevated" onPress={() => handleCatalogSelection(catalog)} onLongPress={() => handleLongPress(catalog)}>
+                  <Card.Cover source={{ uri: catalog.images && catalog.images.length > 0? catalog.images[0] : "https://via.placeholder.com/150" }} />
+                  <Card.Title title={catalog.name}  titleStyle={{ fontFamily: 'System', fontSize: 18, fontWeight: 'bold', color: '#333' }}/>
+                  <Card.Content>
+                    <RNPText variant="labelMedium">
+                      Description: {catalog.description}
+                      Category: {catalog.category}
+                    </RNPText>
+                  </Card.Content>
+                </Card>
+              ))}
+            </View>
+          </ScrollView>
         </View>
-        {filterMenuVisible && (
-          <View style={styles.filterMenu}>
-            <TouchableOpacity
-              style={styles.filterMenuItem}
-              onPress={handleFilterCatalogs}
-            >
-              <Text style={styles.filterMenuItemText}>Sort by Name</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.filterMenuItem}
-              onPress={handleFilterCatalogs}
-            >
-              <Text style={styles.filterMenuItemText}>Sort by Size</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.filterMenuItem}
-              onPress={handleFilterCatalogs}
-            >
-              <Text style={styles.filterMenuItemText}>Sort by Time</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        <ScrollView style={styles.catalogsContainer}>
-          <View style={styles.row}>
-            {catalogs.map((catalog) => (
-              <TouchableOpacity
-                key={catalog.id}
-                style={[
-                  styles.catalogItem,
-                  catalog === selectedCatalog
-                    ? styles.selectedCatalogItem
-                    : null,
-                ]}
-                onPress={() => handleCatalogSelection(catalog)}
-                onLongPress={() => handleLongPress(catalog)}
-              >
-                {catalog.images && catalog.images.length > 0 ? (
-                  <Image
-                    source={{ uri: catalog.images[0] }}
-                    style={styles.catalogImage}
-                  />
-                ) : (
-                  <Image
-                    source={{ uri: "https://via.placeholder.com/150" }}
-                    style={styles.catalogImage}
-                  />
-                )}
-                <Text style={styles.catalogName}>{catalog.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
       </View>
-      <Footer />
-    </View>
+    </>
+    </>
   );
 }
 
@@ -177,53 +142,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 20,
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-    width: "100%",
-  },
-  createCatalogButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
-    width: "48%",
-  },
-  createCatalogButtonText: {
-    color: "#fff",
-    fontSize: 16,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: "bold",
-    marginRight: 5,
-  },
-  filterButton: {
-    backgroundColor: "#ddd",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "30%",
-  },
-  filterMenu: {
-    backgroundColor: "#f0f0f0",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 5,
-  },
-  filterMenuItem: {
-    paddingVertical: 5,
-  },
-  filterMenuItemText: {
-    fontSize: 16,
+    marginBottom: 10,
   },
   catalogsContainer: {
     width: "100%",
+    height: "50%",
   },
   row: {
     flexDirection: "row",
@@ -231,27 +159,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 5,
   },
-  catalogItem: {
-    width: "48%",
-    aspectRatio: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
+  card: {
+    width: "48%", // For the vertical look, more cards are shown on screen
     marginVertical: 5,
-    borderRadius: 10,
-    padding: 10,
-  },
-  selectedCatalogItem: {
-    backgroundColor: "#ccc",
-  },
-  catalogImage: {
-    width: "70%",
-    height: "70%",
-    marginBottom: 10,
-  },
-  catalogName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
+    borderRadius: 15, //To give each card a more rounded look
   },
 });

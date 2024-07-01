@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
-import Header from '../Components/header'; // Import Header component
-import Footer from '../Components/footer'; // Import Footer component
 
 export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -11,7 +9,7 @@ export default function UserProfileScreen({ navigation }) {
   const [isPrivate, setIsPrivate] = useState(false); // State for private account option
   const [profilePictureUrl, setProfilePictureUrl] = useState('https://via.placeholder.com/150'); // Placeholder image URL
 
-  //Settings will go here as a button, take the user to a new page
+  //TODO -- Settings will go here as a button, take the user to a drawer with accessibility options
 
   useEffect(() => {
     const getUserData = async () => {
@@ -43,7 +41,6 @@ export default function UserProfileScreen({ navigation }) {
 
     // Cleanup function
     return () => {
-      // Any cleanup logic here
     };
   }, []); // useEffect will run only once when the component mounts
   
@@ -53,8 +50,6 @@ export default function UserProfileScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <Header navigation={navigation} title="Profile" />
       <View style={styles.content}>
         {/* Profile Picture */}
         <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
@@ -87,8 +82,7 @@ export default function UserProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
-      {/* Footer */}
-      <Footer />
+
     </View>
   );
 }

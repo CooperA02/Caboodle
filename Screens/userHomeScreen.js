@@ -1,9 +1,17 @@
+//This screen is cancelled!
+
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Dimensions, Alert, ScrollView, TouchableWithoutFeedback } from 'react-native';
 import Header from '../Components/header'; // Import Header component
-import Footer from '../Components/footer'; // Import Footer component
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import RNPickerSelect from 'react-native-picker-select';
+import {
+  Card,
+  IconButton,
+  Paragraph,
+  Text as RNPText,
+  Appbar,
+} from 'react-native-paper';
 
 //import { auth, createCatalog } from "../firebaseConfig"; connection to firebase
 //Option for users to view the news feed for collections/collectors they follow to be implemented here during Sprint 3
@@ -54,8 +62,11 @@ export default function UserHomeScreen({ navigation, route }) {
 
 
   return (
+    <>
+      <Appbar.Header>
+        <Appbar.Content title="Explore" />
+      </Appbar.Header>
     <View style={styles.container}>
-      <Header navigation={navigation} title="Home" />
       <View style={styles.content}>
         <TouchableWithoutFeedback onPress={toggleDropdown}>
           <View style={[styles.button]}>
@@ -97,8 +108,9 @@ export default function UserHomeScreen({ navigation, route }) {
           </View>
         </ScrollView>
       </View>
-      <Footer />
+
     </View>
+    </>
   );
 }
 

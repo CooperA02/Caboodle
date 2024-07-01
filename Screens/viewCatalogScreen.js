@@ -15,6 +15,8 @@ import {
   deleteItems,
   deletePublicItems,
 } from "../firebaseConfig";
+import { Appbar, Button, Divider, List } from "react-native-paper";
+
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -41,7 +43,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
   }, [selectedCatalog.id]);
 
   const handleAddItem = () => {
-    navigation.navigate("CreateItemScreen", {
+    navigation.navigate("New Item", {
       selectedCatalog: selectedCatalog,
     });
   };
@@ -74,49 +76,49 @@ export default function ViewCatalogScreen({ navigation, route }) {
     }
   };
 
-  const handleGoBack = () => {
-    navigation.goBack(); // Go back to the Catalog Screen
-  };
-
   const handleNavigateToViewItemScreen = (itemId) => {
     const selectedItem = items.find((item) => item.id === itemId);
-    navigation.navigate("ViewItemScreen", {
+    navigation.navigate("View Item", {
       selectedItem: selectedItem,
       selectedCatalog: selectedCatalog,
     });
   };
 
+
+  //temporary styling and formatting
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
-        <Text style={styles.goBackButtonText}>Go Back</Text>
-      </TouchableOpacity>
-      <Text style={styles.catalogName}>{selectedCatalog.name}</Text>
-
-      <ScrollView style={styles.itemsContainer}>
-        {items.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            onPress={() => handleNavigateToViewItemScreen(item.id)}
-            style={styles.itemRow}
-          >
-            <Image source={{ uri: item.images[0] }} style={styles.itemImage} />
-            <View style={styles.itemDetails}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
-                <AntDesign name="delete" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
+    <>
+      <Appbar.Header>
       <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
-    </View>
+        <Appbar.Content title={selectedCatalog.name}/>
+      </Appbar.Header>
+      <ScrollView style={styles.itemsContainer}>
+        <List.Section>
+          {items.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => handleNavigateToViewItemScreen(item.id)}
+              style={styles.itemRow}
+            >
+              <Image source={{ uri: item.images[0] }} style={styles.itemImage} />
+              <View style={styles.itemDetails}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <TouchableOpacity onPress={() => handleDeleteItem(item.id)}>
+                  <AntDesign name="delete" size={26} color="red" marginRight={28}/>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+          
+        </List.Section>
+        
+      </ScrollView>
+      
+    </>
   );
 }
 
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
   },
   itemsContainer: {
     marginBottom: 20,
+    backgroundColor:"white"
   },
   itemRow: {
     flexDirection: "row",
