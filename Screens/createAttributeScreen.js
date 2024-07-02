@@ -31,7 +31,7 @@ export default function CreateAttributeScreen({ navigation, route }) {
         selectedItem.id,
         newAttribute
       );
-      navigation.navigate("ViewItemScreen", {
+      navigation.navigate("View Item", {
         selectedCatalog: selectedCatalog,
         selectedItem: selectedItem,
       });

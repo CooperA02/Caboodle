@@ -7,10 +7,13 @@ import {
   ScrollView,
   Alert,
   Image,
+  Modal,
+  Dimensions
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { auth, fetchItem } from "../firebaseConfig";
 import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar } from 'react-native-paper';
+import ImageZoom from 'react-native-image-pan-zoom';
 
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
@@ -18,7 +21,8 @@ export default function ViewItemScreen({ navigation, route }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // Initialize with 0 to show the first image
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); 
+  const [modalVisible, setModalVisible] = useState(false); 
 
   useEffect(() => {
     let isMounted = true;
@@ -36,7 +40,7 @@ export default function ViewItemScreen({ navigation, route }) {
           if (isMounted) {
             setAttributes(itemData.attributes || []);
             setImages(itemData.images || []);
-            selectedItem.name = itemData.name; // Update the selectedItem name
+            selectedItem.name = itemData.name; 
           }
         } else {
           console.log("User is not authenticated");
@@ -52,8 +56,8 @@ export default function ViewItemScreen({ navigation, route }) {
     };
 
     const unsubscribe = navigation.addListener("focus", () => {
-      setLoading(true); // Reset loading state when the screen is focused
-      setError(null); // Reset error state when the screen is focused
+      setLoading(true); 
+      setError(null); 
       getItemData();
     });
 
@@ -64,7 +68,7 @@ export default function ViewItemScreen({ navigation, route }) {
   }, [navigation, selectedCatalog.id, selectedItem.id]);
 
   const handleAddAttribute = () => {
-    navigation.navigate("CreateAttributeScreen", {
+    navigation.navigate("Create Attribute", {
       selectedItem,
       selectedCatalog,
     });
@@ -94,6 +98,14 @@ export default function ViewItemScreen({ navigation, route }) {
     navigation.goBack();
   };
 
+  const handleImagePress = () => {
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -112,25 +124,21 @@ export default function ViewItemScreen({ navigation, route }) {
 
   return (
     <>
-      <RNPText variant="headlineMedium">
+      <RNPText variant="headlineSmall" style={styles.catalogName}>
         {selectedCatalog.name}
       </RNPText>
-      <RNPText variant="displaySmall">
+      <RNPText variant="displaySmall" style={styles.itemName}>
         {selectedItem.name}
       </RNPText>
       {images.length > 0 && (
-        <Image
-          source={{ uri: images[selectedImageIndex] }}
-          style={styles.designatedImage}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={handleImagePress}>
+          <Image
+            source={{ uri: images[selectedImageIndex] }}
+            style={styles.designatedImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       )}
-      <RNPText variant="headlineSmall">
-        {selectedItem.value}
-      </RNPText>
-      <RNPText variant="headlineSmall">
-        {selectedItem.description}
-      </RNPText>
       <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
         {images.map((imageUri, index) => (
           <TouchableOpacity
@@ -143,6 +151,14 @@ export default function ViewItemScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <ScrollView style={styles.attributesContainer}>
+        <View style={styles.attributeRow}>
+          <Text style={styles.attributeName}>Value</Text>
+          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
+        </View>
+        <View style={styles.attributeRow}>
+          <Text style={styles.attributeName}>Description</Text>
+          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.description}</Text>
+        </View>
         {attributes.map((attr) => (
           <View key={attr.id} style={styles.attributeRow}>
             <Text style={styles.attributeName}>{attr.name}</Text>
@@ -161,8 +177,31 @@ export default function ViewItemScreen({ navigation, route }) {
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
+
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleCloseModal}
+          >
+            <AntDesign name="closecircle" size={24} color="white" />
+          </TouchableOpacity>
+          <ImageZoom
+            cropWidth={Dimensions.get('window').width}
+            cropHeight={Dimensions.get('window').height}
+            imageWidth={Dimensions.get('window').width}
+            imageHeight={Dimensions.get('window').height}
+          >
+            <Image
+              source={{ uri: images[selectedImageIndex] }}
+              style={styles.fullScreenImage}
+              resizeMode="contain"
+            />
+          </ImageZoom>
+        </View>
+      </Modal>
     </>
-  );  
+  );
 }
 
 const styles = StyleSheet.create({
@@ -171,6 +210,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     marginTop: 40,
+  },
+  catalogName: {
+    fontSize: 20, 
   },
   goBackButton: {
     alignSelf: "flex-start",
@@ -189,13 +231,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: 'center',
   },
   designatedImage: {
-    width: "100%", // Fill almost the full width of the screen
-    height: 400, // Increased height for better display
+    width: "100%",
+    height: 250,
     borderRadius: 5,
     marginBottom: 20,
-    alignSelf: "center", // Center the image horizontally
+    alignSelf: "center",
+  },
+  topAttributesContainer: {
+    marginBottom: 20,
+    textAlign: "center",
   },
   attributesContainer: {
     marginBottom: 5,
@@ -214,6 +261,10 @@ const styles = StyleSheet.create({
   attributeValue: {
     fontSize: 18,
     color: "#888",
+    textAlign: "center",
+  },
+  topAttributeValue: {
+    paddingRight: 10,
   },
   inputContainer: {
     flexDirection: "row",
@@ -231,7 +282,7 @@ const styles = StyleSheet.create({
   },
   imagesContainer: {
     flexDirection: "row",
-    marginBottom: 20,
+    marginBottom: 50,
   },
   imageContainer: {
     width: 100,
@@ -242,5 +293,21 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 5,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullScreenImage: {
+    width: "90%",
+    height: "90%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    zIndex: 1,
   },
 });
