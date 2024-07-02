@@ -133,19 +133,34 @@ export default function App() {
         },
       })}>
         <Stack.Screen 
-          name="SignUp" 
-          component={SignUpScreen} 
-          options={{ headerShown: false }} // if it ain't broke... ctrl+c
-        />
-        <Stack.Screen 
-          name="MainApp" 
-          component={MyTabs} 
+          name="Create Attribute" 
+          component={createAttributeScreen} 
           options={{ headerShown: false }} // Hide header
         />
         <Stack.Screen 
           name="Create Catalog" 
           component={CreateCatalogScreen} 
           options={{ headerShown: false }} // Hide header 
+        />
+        <Stack.Screen 
+          name="New Item" 
+          component={CreateItemScreen} 
+          options={{ headerShown: false }} // Hide header 
+        />
+        <Stack.Screen 
+          name="SignUp" 
+          component={SignUpScreen} 
+          options={{ headerShown: false }} // if it ain't broke... ctrl+c
+        />
+        <Stack.Screen 
+          name="User Home" 
+          component={UserHomeScreen} 
+          options={{ headerShown: false }} // Hide header 
+        />
+        <Stack.Screen 
+          name="Profile" 
+          component={UserProfileScreen} 
+          options={{ headerShown: true }} // Hide header 
         />
         <Stack.Screen 
           name="View Catalog" 
@@ -158,14 +173,9 @@ export default function App() {
           options={{ headerShown: true }} // Hide header 
         />
         <Stack.Screen 
-          name="New Item" 
-          component={CreateItemScreen} 
-          options={{ headerShown: false }} // Hide header 
-        />
-        <Stack.Screen 
-          name="Profile" 
-          component={UserProfileScreen} 
-          options={{ headerShown: true }} // Hide header 
+          name="MainApp" 
+          component={MyTabs} 
+          options={{ headerShown: false }} // Hide header
         />
       </Stack.Navigator>
     </NavigationContainer>
