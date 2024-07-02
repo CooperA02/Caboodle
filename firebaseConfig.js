@@ -18,7 +18,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBMKmyPOzRtuHn1UMgV0874VcoC0W2sTA",
@@ -178,15 +178,15 @@ const createItem = async (userId, catalogId, item, images) => {
   try {
     const imageUrls = await Promise.all(
       images.map(async (imageUri) => {
-        const imageName = imageUri.split("/").pop(); // Get the image name from the URI
-        const response = await fetch(imageUri); // Fetch the image data
-        const blob = await response.blob(); // Convert the fetched data into a Blob
+        const imageName = imageUri.split("/").pop();
+        const response = await fetch(imageUri); 
+        const blob = await response.blob(); 
         const storageRef = ref(
           storage,
           `users/${userId}/catalogs/${catalogId}/items/${item.name}/${imageName}`
         );
-        await uploadBytes(storageRef, blob); // Upload the image to Firebase Storage
-        const downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
+        await uploadBytes(storageRef, blob); 
+        const downloadURL = await getDownloadURL(storageRef); 
         return downloadURL;
       })
     );
@@ -194,6 +194,7 @@ const createItem = async (userId, catalogId, item, images) => {
     const newItem = {
       name: item.name,
       value: item.value,
+      description: item.description, 
       images: imageUrls.length > 0 ? imageUrls : [],
     };
 
@@ -209,6 +210,7 @@ const createItem = async (userId, catalogId, item, images) => {
     throw error;
   }
 };
+
 
 const fetchItems = async (userId, catalogId) => {
   try {
@@ -239,24 +241,22 @@ const fetchItem = async (userId, catalogId, itemId) => {
       "items",
       itemId
     );
-    const itemSnap = await getDoc(itemRef);
+    const itemDoc = await getDoc(itemRef);
 
-    if (!itemSnap.exists()) {
-      throw new Error("Item does not exist.");
+    if (!itemDoc.exists()) {
+      console.log("Item does not exist.");
+      return null;
     }
 
-    const itemData = itemSnap.data();
-
-    // Fetch attributes
-    const attributes = await fetchItemAttributes(userId, catalogId, itemId);
+    const itemData = itemDoc.data();
+    const attributes = await fetchItemAttributes(userId, catalogId, itemId); // Fetch attributes
 
     return {
-      id: itemId,
       ...itemData,
       attributes: attributes,
     };
   } catch (error) {
-    console.error("Error fetching item data:", error.message);
+    console.error("Error fetching item details:", error.message);
     throw error;
   }
 };
@@ -373,17 +373,27 @@ const fetchItemAttributes = async (userId, catalogId, itemId) => {
 // Delete Items
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
-    const itemRef = doc(
-      firestore,
-      "users",
-      userId,
-      "catalogs",
-      catalogId,
-      "items",
-      itemId
-    );
-    await deleteDoc(itemRef);
-    console.log("Item successfully deleted:", itemId);
+    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemDoc = await getDoc(itemRef);
+
+    if (itemDoc.exists()) {
+      const itemData = itemDoc.data();
+      const imageUrls = itemData.images;
+
+      // Delete images from storage
+      const deletePromises = imageUrls.map((url) => {
+        const imageRef = ref(storage, url);
+        return deleteObject(imageRef);
+      });
+
+      await Promise.all(deletePromises);
+
+      // Delete item document
+      await deleteDoc(itemRef);
+      console.log("Item and its images successfully deleted:", itemId);
+    } else {
+      console.log("No such item exists!");
+    }
   } catch (error) {
     console.error("Error deleting item data:", error.message);
     throw error;

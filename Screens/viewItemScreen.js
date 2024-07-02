@@ -12,7 +12,6 @@ import { AntDesign } from "@expo/vector-icons";
 import { auth, fetchItem } from "../firebaseConfig";
 import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar } from 'react-native-paper';
 
-
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
@@ -111,7 +110,6 @@ export default function ViewItemScreen({ navigation, route }) {
     );
   }
 
-
   return (
     <>
       <RNPText variant="headlineMedium">
@@ -124,9 +122,15 @@ export default function ViewItemScreen({ navigation, route }) {
         <Image
           source={{ uri: images[selectedImageIndex] }}
           style={styles.designatedImage}
-          resizeMode="contain" // Ensures the image is not squished
+          resizeMode="contain"
         />
       )}
+      <RNPText variant="headlineSmall">
+        {selectedItem.value}
+      </RNPText>
+      <RNPText variant="headlineSmall">
+        {selectedItem.description}
+      </RNPText>
       <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
         {images.map((imageUri, index) => (
           <TouchableOpacity
@@ -157,9 +161,8 @@ export default function ViewItemScreen({ navigation, route }) {
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
-
     </>
-  );
+  );  
 }
 
 const styles = StyleSheet.create({
@@ -177,6 +180,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#007bff",
+  },
+  titleContainer: {
+    alignItems: "center",
+    marginBottom: 10,
   },
   itemName: {
     fontSize: 24,
@@ -220,7 +227,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginLeft: 30,
-    marginBottom: 5, //temporary fix until button is replaced
+    marginBottom: 5,
   },
   imagesContainer: {
     flexDirection: "row",

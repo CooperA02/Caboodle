@@ -6,127 +6,194 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import Header from "../Components/header";
 import { Text, Appbar } from 'react-native-paper';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, createItem, addToPublicItemList } from "../firebaseConfig"; // Import the Firebase auth object and authentication functions
-
+import { auth, createItem, addToPublicItemList } from "../firebaseConfig";
 
 export default function CreateItemScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
   const [itemName, setItemName] = useState("");
   const [itemValue, setItemValue] = useState("");
+  const [itemDescription, setItemDescription] = useState(""); 
   const [selectedImages, setSelectedImages] = useState([]);
 
   const handleCreateItem = async () => {
     const newItem = {
       name: itemName,
       value: itemValue,
+      description: itemDescription, 
     };
 
     try {
+      if (selectedImages.length === 0) {
+        throw new Error("Please add at least one photo.");
+      }
+
+      console.log("Creating item with data:", newItem, "and images:", selectedImages);
+
       await createItem(
         auth.currentUser.uid,
         selectedCatalog.id,
         newItem,
         selectedImages
       );
+
+      console.log("Item created successfully.");
+
       if (selectedCatalog.isPublic) {
         await addToPublicItemList(selectedCatalog.id, newItem);
+        console.log("Item added to public list.");
       }
-      navigation.navigate("ViewCatalogScreen", {
+
+      navigation.navigate("View Catalog", {
         selectedCatalog: selectedCatalog,
       });
     } catch (e) {
       console.error("Error saving item data: ", e);
       alert("An error occurred while creating the item. Please try again.");
     }
-  };
+  }
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need camera permissions to make this work!");
-      return;
-    }
+    try {
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status: mediaLibraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.5, // Adjust quality to reduce size
-    });
+      if (cameraStatus !== "granted" || mediaLibraryStatus !== "granted") {
+        alert("Sorry, we need camera and media library permissions to make this work!");
+        return;
+      }
 
-    if (!result.canceled) {
-      setSelectedImages([...selectedImages, result.assets[0].uri]);
+      Alert.alert(
+        "Add Photo",
+        "Choose an option",
+        [
+          { text: "Take Photo", onPress: () => openCamera() },
+          { text: "Choose from Library", onPress: () => openImageLibrary() },
+          { text: "Cancel", style: "cancel" },
+        ],
+        { cancelable: true }
+      );
+    } catch (e) {
+      console.error("Error requesting permissions: ", e);
+      alert("An error occurred while requesting permissions. Please try again.");
     }
   };
 
+  const openCamera = async () => {
+    try {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.1, // Adjust quality to reduce size
+      });
 
-  //...SPRINT 3 TODO list
+      if (!result.cancelled && result.assets) {
+        const imageUris = result.assets.map(asset => asset.uri);
+        setSelectedImages(prevImages => [...prevImages, ...imageUris]);
+      }
+    } catch (e) {
+      console.error("Error opening camera: ", e);
+      alert("An error occurred while opening the camera. Please try again.");
+    }
+  };
+
+  const openImageLibrary = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.1,
+      });
+
+      if (!result.cancelled && result.assets) {
+        const imageUris = result.assets.map(asset => asset.uri);
+        setSelectedImages(prevImages => [...prevImages, ...imageUris]);
+      }
+    } catch (e) {
+      console.error("Error opening image library: ", e);
+      alert("An error occurred while opening the image library. Please try again.");
+    }
+  };
+
   return (
     <>
-    <Appbar.Header>
-      <Appbar.Content title="Create New Catalog"/>
-    </Appbar.Header>
-    <View style={styles.container}>
-      <ScrollView style={styles.content}>
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ marginRight: 10, marginBottom: 15 }}>
-                Add Item Photos
-              </Text>
-              <AntDesign name="pluscircleo" size={24} color="black" />
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.imagesContainer}>
-          {selectedImages.map((imageUri, index) => (
-            <View key={index} style={styles.imageContainer}>
-              <Image source={{ uri: imageUri }} style={styles.image} />
-            </View>
-          ))}
-        </View>
-        <TextInput
-          placeholder="Name of Item"
-          value={itemName}
-          onChangeText={setItemName}
-          style={[styles.input, { marginTop: 100 }]}
-        />
-        <TextInput
-          placeholder="Value of Item"
-          value={itemValue}
-          onChangeText={setItemValue}
-          style={styles.input}
-        />
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateItem}
-          >
-            <Text style={styles.buttonText}>Create</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+      <Appbar.Header>
+        <Appbar.Content title="Create New Catalog" />
+      </Appbar.Header>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ marginRight: 10, marginBottom: 15 }}>
+                  Add Item Photos
+                </Text>
+                <AntDesign name="pluscircleo" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.imagesContainer}>
+            {selectedImages.map((imageUri, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{ uri: imageUri }} style={styles.image} />
+              </View>
+            ))}
+          </View>
+          <TextInput
+            placeholder="Name of Item"
+            value={itemName}
+            onChangeText={setItemName}
+            style={[styles.input, { marginTop: 100 }]}
+          />
+          <TextInput
+            placeholder="Value of Item"
+            value={itemValue}
+            onChangeText={setItemValue}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Description of Item"
+            value={itemDescription}
+            onChangeText={setItemDescription}
+            style={styles.descriptionInput}
+            multiline={true} 
+            numberOfLines={4} 
+          />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={handleCreateItem}
+            >
+              <Text style={styles.buttonText}>Create</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#fff",
+    paddingHorizontal: 20,
   },
   content: {
     flex: 1,
