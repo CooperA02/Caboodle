@@ -14,13 +14,14 @@ import { Appbar, Button, Divider, List } from "react-native-paper";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
-  const [items, setItems] = useState([{}]);
+  const [items, setItems] = useState({});
 
   useEffect(() => {
     const getItemData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
+          console.log("catalogId: " + selectedCatalog.publicCatalogId);
           const itemData = await fetchPublicItems(
             selectedCatalog.publicCatalogId
           );

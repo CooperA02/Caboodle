@@ -58,7 +58,11 @@ export default function UserNewsFeed({ navigation, route }) {
   }, [navigation, route]);
 
   const handleCatalogSelection = (catalog) => {
-    navigation.navigate("View Public Catalog", { selectedCatalog: catalog });
+    console.log("Selected catalog:", catalog.publicCatalogId);
+    navigation.navigate("View Public Catalog", {
+      selectedCatalog: catalog,
+      modalPresentationStyle: "pageSheet",
+    });
   };
 
   const handleSearch = () => {

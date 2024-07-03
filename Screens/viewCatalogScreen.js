@@ -47,7 +47,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
     });
   };
 
-  const handleDeleteItem = (itemId, publicItemId) => {
+  const handleDeleteItem = (item) => {
     Alert.alert(
       "Delete Item",
       "Are you sure you want to delete this item?",
@@ -59,21 +59,17 @@ export default function ViewCatalogScreen({ navigation, route }) {
         },
         {
           text: "OK",
-          onPress: () => handleDelete(itemId, publicItemId),
+          onPress: () => handleDelete(item),
         },
       ],
       { cancelable: false }
     );
   };
 
-  const handleDelete = async (itemId) => {
-    try {
-      await deleteItems(auth.currentUser.uid, selectedCatalog.id, itemId); // Await deletion
-      setItems(items.filter((item) => item.id !== itemId)); // Update local state after deletion
-      await deletePublicItems(selectedCatalog.publicCatalogId, publicItemId); // Delete public item
-    } catch (error) {
-      console.error("Error deleting item data:", error.message);
-    }
+  const handleDelete = (delItem) => {
+    deleteItems(auth.currentUser.uid, selectedCatalog.id, delItem.id); // Await deletion
+    deletePublicItems(selectedCatalog.publicId, delItem.publicId); // Delete public item
+    setItems(items.filter((item) => item.id !== delItem.id)); // Update local state after deletion
   };
 
   const handleNavigateToViewItemScreen = (itemId) => {
@@ -109,9 +105,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
               />
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <TouchableOpacity
-                  onPress={() => handleDeleteItem(item.id, item.publicItemId)}
-                >
+                <TouchableOpacity onPress={() => handleDeleteItem(item)}>
                   <AntDesign
                     name="delete"
                     size={26}

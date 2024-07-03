@@ -543,6 +543,7 @@ const fetchPublicItems = async (catalogId) => {
     querySnapshot.forEach((doc) => {
       publicItems.push(doc.data());
     });
+    console.log("Public Items fetched successfully.");
     return publicItems;
   } catch (error) {
     console.error("Error fetching public item data:", error.message);
@@ -550,16 +551,17 @@ const fetchPublicItems = async (catalogId) => {
   }
 };
 
-const deletePublicItems = async (catalogId, itemId) => {
+const deletePublicItems = async (pubCatalogId, itemId) => {
   try {
     const q = query(
-      collection(firestore, "publicCatalogs", catalogId, "publicItems")
+      collection(firestore, "publicCatalogs", pubCatalogId, "publicItems")
     );
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      if (doc.data().id === itemId) {
+      if (doc.data().publicItemId === itemId) {
         deleteDoc(doc.ref);
       }
+      console.log("Item successfully deleted:", itemId);
     });
   } catch (error) {
     console.error("Error deleting public item data:", error.message);
