@@ -18,7 +18,13 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBMKmyPOzRtuHn1UMgV0874VcoC0W2sTA",
@@ -125,6 +131,7 @@ const createCatalog = async (userId, catalog) => {
         description: catalog.description,
         images: catalog.images,
         isPublic: catalog.isPublic,
+        publicId: null,
       }
     );
 
@@ -179,29 +186,42 @@ const createItem = async (userId, catalogId, item, images) => {
     const imageUrls = await Promise.all(
       images.map(async (imageUri) => {
         const imageName = imageUri.split("/").pop();
-        const response = await fetch(imageUri); 
-        const blob = await response.blob(); 
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
         const storageRef = ref(
           storage,
           `users/${userId}/catalogs/${catalogId}/items/${item.name}/${imageName}`
         );
-        await uploadBytes(storageRef, blob); 
-        const downloadURL = await getDownloadURL(storageRef); 
+        await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(storageRef);
         return downloadURL;
       })
     );
 
     const newItem = {
+      id: null,
       name: item.name,
       value: item.value,
-      description: item.description, 
+      description: item.description,
       images: imageUrls.length > 0 ? imageUrls : [],
+      publicId: null,
     };
 
     const docRef = await addDoc(
       collection(firestore, "users", userId, "catalogs", catalogId, "items"),
       newItem
     );
+
+    const itemDocRef = doc(
+      firestore,
+      "users",
+      userId,
+      "catalogs",
+      catalogId,
+      "items",
+      docRef.id
+    );
+    await setDoc(itemDocRef, { id: docRef.id }, { merge: true });
 
     console.log("Item successfully created:", docRef.id);
     return docRef.id;
@@ -210,7 +230,6 @@ const createItem = async (userId, catalogId, item, images) => {
     throw error;
   }
 };
-
 
 const fetchItems = async (userId, catalogId) => {
   try {
@@ -277,6 +296,7 @@ const createAttribute = async (userId, catalogId, itemId, attribute) => {
       ),
       {
         id: null,
+        publicId: null,
         name: attribute.name,
         value: attribute.value,
       }
@@ -373,7 +393,15 @@ const fetchItemAttributes = async (userId, catalogId, itemId) => {
 // Delete Items
 const deleteItems = async (userId, catalogId, itemId) => {
   try {
-    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemRef = doc(
+      firestore,
+      "users",
+      userId,
+      "catalogs",
+      catalogId,
+      "items",
+      itemId
+    );
     const itemDoc = await getDoc(itemRef);
 
     if (itemDoc.exists()) {
@@ -413,17 +441,23 @@ const addToPublicCatalogList = async (userId, name, catalog, catalogId) => {
       catalogImages: catalog.images,
     });
 
-    const catalogDocRef = doc(
+    const pubCatalogDocRef = doc(
       collection(firestore, "publicCatalogs"),
       docRef.id
     );
     await setDoc(
-      catalogDocRef,
+      pubCatalogDocRef,
       { publicCatalogId: docRef.id },
       { merge: true }
     );
-
     console.log("Catalog successfully added to public list:", docRef.id);
+
+    const catalogDocRef = doc(
+      collection(firestore, "users", userId, "catalogs"),
+      catalogId
+    );
+    await setDoc(catalogDocRef, { publicId: docRef.id }, { merge: true });
+
     return docRef.id;
   } catch (error) {
     console.error("Error adding catalog to public list:", error.message);
@@ -461,24 +495,37 @@ const deletePublicCatalogs = async (userId, catalogId) => {
   }
 };
 
-const addToPublicItemList = async (catalogId, item) => {
+const addToPublicItemList = async (
+  UserId,
+  catalogId,
+  pubCatalogId,
+  itemId,
+  item
+) => {
   try {
     const docRef = await addDoc(
-      collection(firestore, "publicCatalogs", catalogId, "publicItems"),
+      collection(firestore, "publicCatalogs", pubCatalogId, "publicItems"),
       {
         publicItemId: null,
+        itemId: itemId,
         itemName: item.name,
         itemValue: item.value,
-        itemImages: item.images,
+        itemDescription: item.description,
       }
     );
 
     const itemDocRef = doc(
-      collection(firestore, "publicCatalogs", catalogId, "publicItems"),
+      collection(firestore, "publicCatalogs", pubCatalogId, "publicItems"),
       docRef.id
     );
     await setDoc(itemDocRef, { publicItemId: docRef.id }, { merge: true });
     console.log("Item successfully added to public list:", docRef.id);
+
+    const itemRef = doc(
+      collection(firestore, "users", UserId, "catalogs", catalogId, "items"),
+      itemId
+    );
+    await setDoc(itemRef, { publicId: docRef.id }, { merge: true });
     return docRef.id;
   } catch (error) {
     console.error("Error adding item to public list:", error.message);
@@ -503,7 +550,7 @@ const fetchPublicItems = async (catalogId) => {
   }
 };
 
-const deletePublicItems = async (userId, catalogId, itemId) => {
+const deletePublicItems = async (catalogId, itemId) => {
   try {
     const q = query(
       collection(firestore, "publicCatalogs", catalogId, "publicItems")
@@ -516,6 +563,70 @@ const deletePublicItems = async (userId, catalogId, itemId) => {
     });
   } catch (error) {
     console.error("Error deleting public item data:", error.message);
+    throw error;
+  }
+};
+
+const addToPublicAttributeList = async (
+  UserId,
+  catalogId,
+  itemId,
+  attributeId,
+  attribute
+) => {
+  try {
+    const docRef = await addDoc(
+      collection(
+        firestore,
+        "publicCatalogs",
+        catalogId,
+        "publicItems",
+        itemId,
+        "publicAttributes"
+      ),
+      {
+        publicAttributeId: null,
+        attributeId: attribute,
+        attributeName: attribute.name,
+        attributeValue: attribute.value,
+      }
+    );
+
+    const attributeDocRef = doc(
+      collection(
+        firestore,
+        "publicCatalogs",
+        catalogId,
+        "publicItems",
+        itemId,
+        "publicAttributes"
+      ),
+      docRef.id
+    );
+    await setDoc(
+      attributeDocRef,
+      { publicAttributeId: docRef.id },
+      { merge: true }
+    );
+    console.log("Attribute successfully added to public list:", docRef.id);
+
+    const attributeRef = doc(
+      collection(
+        firestore,
+        "users",
+        UserId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
+      attributeId
+    );
+    await setDoc(attributeRef, { publicId: docRef.id }, { merge: true });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding item to public list:", error.message);
     throw error;
   }
 };
@@ -596,6 +707,7 @@ export {
   addToPublicItemList,
   fetchPublicItems,
   deletePublicItems,
+  addToPublicAttributeList,
   createChat,
   addMessage,
   fetchChats,

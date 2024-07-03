@@ -12,21 +12,21 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { Text, Appbar } from 'react-native-paper';
+import { Text, Appbar } from "react-native-paper";
 import { auth, createItem, addToPublicItemList } from "../firebaseConfig";
 
 export default function CreateItemScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
   const [itemName, setItemName] = useState("");
   const [itemValue, setItemValue] = useState("");
-  const [itemDescription, setItemDescription] = useState(""); 
+  const [itemDescription, setItemDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
 
   const handleCreateItem = async () => {
     const newItem = {
       name: itemName,
       value: itemValue,
-      description: itemDescription, 
+      description: itemDescription,
     };
 
     try {
@@ -34,9 +34,14 @@ export default function CreateItemScreen({ navigation, route }) {
         throw new Error("Please add at least one photo.");
       }
 
-      console.log("Creating item with data:", newItem, "and images:", selectedImages);
+      console.log(
+        "Creating item with data:",
+        newItem,
+        "and images:",
+        selectedImages
+      );
 
-      await createItem(
+      const itemId = await createItem(
         auth.currentUser.uid,
         selectedCatalog.id,
         newItem,
@@ -46,7 +51,13 @@ export default function CreateItemScreen({ navigation, route }) {
       console.log("Item created successfully.");
 
       if (selectedCatalog.isPublic) {
-        await addToPublicItemList(selectedCatalog.id, newItem);
+        await addToPublicItemList(
+          auth.currentUser.uid,
+          selectedCatalog.id,
+          selectedCatalog.publicId,
+          itemId,
+          newItem
+        );
         console.log("Item added to public list.");
       }
 
@@ -57,15 +68,19 @@ export default function CreateItemScreen({ navigation, route }) {
       console.error("Error saving item data: ", e);
       alert("An error occurred while creating the item. Please try again.");
     }
-  }
+  };
 
   const pickImage = async () => {
     try {
-      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      const { status: mediaLibraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status: cameraStatus } =
+        await ImagePicker.requestCameraPermissionsAsync();
+      const { status: mediaLibraryStatus } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (cameraStatus !== "granted" || mediaLibraryStatus !== "granted") {
-        alert("Sorry, we need camera and media library permissions to make this work!");
+        alert(
+          "Sorry, we need camera and media library permissions to make this work!"
+        );
         return;
       }
 
@@ -81,7 +96,9 @@ export default function CreateItemScreen({ navigation, route }) {
       );
     } catch (e) {
       console.error("Error requesting permissions: ", e);
-      alert("An error occurred while requesting permissions. Please try again.");
+      alert(
+        "An error occurred while requesting permissions. Please try again."
+      );
     }
   };
 
@@ -95,8 +112,8 @@ export default function CreateItemScreen({ navigation, route }) {
       });
 
       if (!result.cancelled && result.assets) {
-        const imageUris = result.assets.map(asset => asset.uri);
-        setSelectedImages(prevImages => [...prevImages, ...imageUris]);
+        const imageUris = result.assets.map((asset) => asset.uri);
+        setSelectedImages((prevImages) => [...prevImages, ...imageUris]);
       }
     } catch (e) {
       console.error("Error opening camera: ", e);
@@ -113,19 +130,21 @@ export default function CreateItemScreen({ navigation, route }) {
       });
 
       if (!result.cancelled && result.assets) {
-        const imageUris = result.assets.map(asset => asset.uri);
-        setSelectedImages(prevImages => [...prevImages, ...imageUris]);
+        const imageUris = result.assets.map((asset) => asset.uri);
+        setSelectedImages((prevImages) => [...prevImages, ...imageUris]);
       }
     } catch (e) {
       console.error("Error opening image library: ", e);
-      alert("An error occurred while opening the image library. Please try again.");
+      alert(
+        "An error occurred while opening the image library. Please try again."
+      );
     }
   };
 
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title="Create New Catalog" />
+        <Appbar.Content title="Create New Item" />
       </Appbar.Header>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -166,8 +185,8 @@ export default function CreateItemScreen({ navigation, route }) {
             value={itemDescription}
             onChangeText={setItemDescription}
             style={styles.descriptionInput}
-            multiline={true} 
-            numberOfLines={4} 
+            multiline={true}
+            numberOfLines={4}
           />
           <View style={styles.buttonContainer}>
             <TouchableOpacity

@@ -26,12 +26,10 @@ import {
   Paragraph,
   Text as RNPText,
   Appbar,
-} from 'react-native-paper';
+} from "react-native-paper";
 import { auth, fetchPublicCatalogs } from "../firebaseConfig";
 
-
 const windowWidth = Dimensions.get("window").width;
-
 
 export default function UserNewsFeed({ navigation, route }) {
   const [catalogs, setCatalogs] = useState([]);
@@ -60,7 +58,7 @@ export default function UserNewsFeed({ navigation, route }) {
   }, [navigation, route]);
 
   const handleCatalogSelection = (catalog) => {
-    navigation.navigate("View Catalog", { selectedCatalog: catalog });
+    navigation.navigate("View Public Catalog", { selectedCatalog: catalog });
   };
 
   const handleSearch = () => {
@@ -68,22 +66,51 @@ export default function UserNewsFeed({ navigation, route }) {
     console.log("Searching for:", searchQuery);
   };
 
-
-  return ( 
-    <TouchableWithoutFeedback onPressOut={() => Keyboard.dismiss()}> 
+  return (
+    <TouchableWithoutFeedback onPressOut={() => Keyboard.dismiss()}>
       <>
         <Appbar.Header>
-          <Appbar.Content title="Your Feed"/> 
-            <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
+          <Appbar.Content title="Your Feed" />
+          <Appbar.Action
+            icon="account-outline"
+            onPress={() => navigation.navigate("Profile")}
+          />
         </Appbar.Header>
         {/* What worked yesterday is broken today.  Replaced with text till fix pushed. Please let this be the last time*/}
         <ScrollView style={styles.catalogsContainer}>
           <View style={styles.row}>
             {catalogs.map((catalog) => (
-              <Card key={catalog.id} style={styles.card} mode="elevated" onPress={() => handleCatalogSelection(catalog)}>
+              <Card
+                key={catalog.id}
+                style={styles.card}
+                mode="elevated"
+                onPress={() => handleCatalogSelection(catalog)}
+              >
                 {/* TODO: Catalog cover images are not displaying. Tyler and Desmond to work on.*/}
-                <Card.Cover source={{ uri: catalog.images && catalog.images.length > 0? catalog.images[0] : "https://via.placeholder.com/150" }} /> 
-                <Card.Title title={catalog.catalogName} subtitle={`by ${catalog.userName}`} titleStyle={{ fontFamily: 'System', fontSize: 18, fontWeight: 'bold', color: '#333' }} subtitleStyle={{ fontFamily: 'System', fontSize: 14, fontStyle: 'italic', color: '#666' }}/>
+                <Card.Cover
+                  source={{
+                    uri:
+                      catalog.images && catalog.images.length > 0
+                        ? catalog.images[0]
+                        : "https://via.placeholder.com/150",
+                  }}
+                />
+                <Card.Title
+                  title={catalog.catalogName}
+                  subtitle={`by ${catalog.userName}`}
+                  titleStyle={{
+                    fontFamily: "System",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                  subtitleStyle={{
+                    fontFamily: "System",
+                    fontSize: 14,
+                    fontStyle: "italic",
+                    color: "#666",
+                  }}
+                />
                 <Card.Content>
                   <RNPText variant="labelMedium">
                     {/* For the Feed, this description will be shown unlike the search page*/}
@@ -98,7 +125,7 @@ export default function UserNewsFeed({ navigation, route }) {
       </>
     </TouchableWithoutFeedback>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -146,6 +173,5 @@ const styles = StyleSheet.create({
     width: "48%", // Adjust this value to set more landscape, less portrait styled-cards
     marginVertical: 5,
     borderRadius: 15, // Okay...for now
-
   },
 });

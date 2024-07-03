@@ -9,25 +9,26 @@ import {
   Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import {
-  auth,
-  fetchItems,
-  deleteItems,
-  deletePublicItems,
-} from "../firebaseConfig";
+import { auth, fetchPublicItems } from "../firebaseConfig";
 import { Appbar, Button, Divider, List } from "react-native-paper";
 
-export default function ViewCatalogScreen({ navigation, route }) {
+export default function ViewPublicCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([{}]);
 
   useEffect(() => {
     const getItemData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          const itemData = await fetchItems(user.uid, selectedCatalog.id);
+          const itemData = await fetchPublicItems(
+            selectedCatalog.publicCatalogId
+          );
+          console.log("ItemData got: " + itemData[0].publicItemId);
+          console.log("ItemData got: " + itemData[0].itemId);
+          console.log("ItemData got: " + itemData[0].itemName);
           setItems(itemData);
+          console.log("Items set");
         } else {
           console.log("User is not authenticated");
         }
@@ -39,42 +40,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
     getItemData();
 
     return () => {};
-  }, [selectedCatalog.id]);
-
-  const handleAddItem = () => {
-    navigation.navigate("New Item", {
-      selectedCatalog: selectedCatalog,
-    });
-  };
-
-  const handleDeleteItem = (itemId, publicItemId) => {
-    Alert.alert(
-      "Delete Item",
-      "Are you sure you want to delete this item?",
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },
-        {
-          text: "OK",
-          onPress: () => handleDelete(itemId, publicItemId),
-        },
-      ],
-      { cancelable: false }
-    );
-  };
-
-  const handleDelete = async (itemId) => {
-    try {
-      await deleteItems(auth.currentUser.uid, selectedCatalog.id, itemId); // Await deletion
-      setItems(items.filter((item) => item.id !== itemId)); // Update local state after deletion
-      await deletePublicItems(selectedCatalog.publicCatalogId, publicItemId); // Delete public item
-    } catch (error) {
-      console.error("Error deleting item data:", error.message);
-    }
-  };
+  }, [selectedCatalog.publicCatalogId]);
 
   const handleNavigateToViewItemScreen = (itemId) => {
     const selectedItem = items.find((item) => item.id === itemId);
@@ -88,11 +54,6 @@ export default function ViewCatalogScreen({ navigation, route }) {
   return (
     <>
       <Appbar.Header>
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <AntDesign name="pluscircleo" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
         <Appbar.Content title={selectedCatalog.name} />
       </Appbar.Header>
       <ScrollView style={styles.itemsContainer}>
@@ -109,16 +70,6 @@ export default function ViewCatalogScreen({ navigation, route }) {
               />
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <TouchableOpacity
-                  onPress={() => handleDeleteItem(item.id, item.publicItemId)}
-                >
-                  <AntDesign
-                    name="delete"
-                    size={26}
-                    color="red"
-                    marginRight={28}
-                  />
-                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           ))}
