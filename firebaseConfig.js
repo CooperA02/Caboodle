@@ -431,9 +431,31 @@ const addToPublicCatalogList = async (userId, name, catalog, catalogId) => {
   }
 };
 
-const fetchPublicCatalogs = async () => {
+const fetchPublicCatalogs = async (searchQuery = '', sortOption = 'alphabetical') => {
   try {
-    const q = query(collection(firestore, "publicCatalogs"));
+    let q = query(collection(firestore, "publicCatalogs"));
+
+    // Apply search filter if searchQuery is provided
+    if (searchQuery) {
+      q = query(
+        collection(firestore, "publicCatalogs"),
+        where("name", ">=", searchQuery),
+        where("name", "<=", searchQuery + '\uf8ff') // Simple case-insensitive search
+      );
+    }
+
+    // Apply sorting based on sortOption
+    switch (sortOption) {
+      case 'popularity':
+        q = query(q, orderBy('views', 'desc')); // Assuming 'views' field exists for tracking popularity
+        break;
+      case 'relevance':
+        q = query(q, orderBy('createdAt', 'desc')); // Assuming 'createdAt' field exists for tracking posting time
+        break;
+      default:
+        q = query(q, orderBy('name')); // Fallback to alphabetical sorting
+    }
+
     const querySnapshot = await getDocs(q);
     const publicCatalogs = [];
     querySnapshot.forEach((doc) => {
