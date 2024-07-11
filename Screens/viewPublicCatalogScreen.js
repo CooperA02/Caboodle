@@ -14,7 +14,7 @@ import { Appbar, Button, Divider, List } from "react-native-paper";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
-  const [items, setItems] = useState({});
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     const getItemData = async () => {
@@ -25,11 +25,7 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
           const itemData = await fetchPublicItems(
             selectedCatalog.publicCatalogId
           );
-          console.log("ItemData got: " + itemData[0].publicItemId);
-          console.log("ItemData got: " + itemData[0].itemId);
-          console.log("ItemData got: " + itemData[0].itemName);
           setItems(itemData);
-          console.log("Items set");
         } else {
           console.log("User is not authenticated");
         }
@@ -65,12 +61,8 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
               onPress={() => handleNavigateToViewItemScreen(item.id)}
               style={styles.itemRow}
             >
-              <Image
-                source={{ uri: item.images[0] }}
-                style={styles.itemImage}
-              />
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemName}>{item.itemName}</Text>
               </View>
             </TouchableOpacity>
           ))}
