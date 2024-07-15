@@ -44,6 +44,8 @@ import {
   configureFonts,
 } from "react-native-paper"; //Unused imports are still here as setup for other TODO items if there is time...
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import UserChatsScreen from "./Screens/userChatScreen";
+import GlobalChatScreen from "./Screens/globalChatScreen";
 
 const Tab = createMaterialBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -201,6 +203,16 @@ export default function App() {
           <Stack.Screen
             name="View Public Catalog"
             component={ViewPublicCatalogScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="UserChats"
+            component={UserChatsScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="GlobalChat"
+            component={GlobalChatScreen}
             options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>
