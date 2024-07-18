@@ -21,6 +21,9 @@ import createAttributeScreen from "./Screens/createAttributeScreen";
 import ChatListScreen from "./Screens/chatListScreen";
 import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
+import UserChatsScreen from "./Screens/userChatScreen";
+import GlobalChatScreen from "./Screens/globalChatScreen";
+import DirectChatsScreen from "./Screens/directChatScreen";
 import {
   Provider as PaperProvider,
   BottomNavigation,
@@ -44,8 +47,6 @@ import {
   configureFonts,
 } from "react-native-paper"; //Unused imports are still here as setup for other TODO items if there is time...
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import UserChatsScreen from "./Screens/userChatScreen";
-import GlobalChatScreen from "./Screens/globalChatScreen";
 
 const Tab = createMaterialBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -206,13 +207,18 @@ export default function App() {
             options={{ headerShown: true }} // Hide header
           />
           <Stack.Screen
-            name="UserChats"
+            name="UserChatScreen"
             component={UserChatsScreen}
             options={{ headerShown: true }} // Hide header
           />
           <Stack.Screen
             name="GlobalChat"
             component={GlobalChatScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="DirectChat"
+            component={DirectChatsScreen}
             options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>

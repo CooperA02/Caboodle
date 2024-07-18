@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Appbar, Button } from 'react-native-paper';
-import { auth, searchUsers, fetchChats, fetchGlobalChat } from "../firebaseConfig";
+import { Appbar, Button, Card } from 'react-native-paper';
+import { auth, searchUsers, createChat, fetchChats } from "../firebaseConfig";
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 const Tab = createMaterialTopTabNavigator();
 
-export default function ChatListScreen({ navigation, route }) {
+export default function ChatListScreen({ navigation }) {
   return (
     <>
       <Appbar.Header>
@@ -60,9 +62,36 @@ function ChatScreen({ navigation }) {
     setSearchResults(results);
   };
 
-  const handleChatWithUser = (user) => {
-    // Logic to initiate chat with the selected user
-  };
+  const handleChatWithUser = async (user) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.log("User not authenticated");
+      return;
+    }
+  
+    const chats = await fetchChats(currentUser.uid);
+    let existingChat = null;
+  
+    for (const chat of chats) {
+      if ((chat.user1Id === currentUser.uid && chat.user2Id === user.id) ||
+          (chat.user1Id === user.id && chat.user2Id === currentUser.uid)) {
+        existingChat = chat;
+        break;
+      }
+    }
+  
+    let chatId;
+    if (existingChat) {
+      chatId = existingChat.chatId;
+    } else {
+      chatId = await createChat(currentUser.uid, user.id, currentUser.displayName, user.username);
+    }
+  
+    navigation.navigate("UserChatScreen", {
+      chatId: chatId,
+      username: user.username,
+    });
+  };  
 
   return (
     <View style={styles.screenContainer}>
@@ -77,17 +106,26 @@ function ChatScreen({ navigation }) {
         <View>
           <Text style={styles.sectionTitle}>Search Results:</Text>
           {searchResults.map((user) => (
-            <TouchableOpacity key={user.id} onPress={() => handleChatWithUser(user)}>
-              <Text>{user.name}</Text>
-            </TouchableOpacity>
+            <Card key={user.id} style={styles.userCard} onPress={() => handleChatWithUser(user)}>
+              <View style={styles.cardContent}>
+                <Image source={{ uri: user.profilePictureUrl }} style={styles.userImage} />
+                <Text style={styles.username}>{user.username}</Text>
+              </View>
+            </Card>
           ))}
         </View>
-        <View>
-          <TouchableOpacity onPress={() => navigation.navigate("UserChats")}>
-            <Text style={styles.linkText}>Your Chats</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate("DirectChat")} style={styles.iconButton}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="message" size={50} color="black" />
+              <Text style={styles.iconText}>Direct Chat</Text>
+            </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("GlobalChat")}>
-            <Text style={styles.linkText}>Global Chat</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("GlobalChat")} style={styles.iconButton}>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name="earth" size={50} color="black" />
+              <Text style={styles.iconText}>Global Chat</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -135,5 +173,38 @@ const styles = StyleSheet.create({
     color: "blue",
     marginTop: 10,
     textDecorationLine: "underline",
+  },
+  userCard: {
+    marginVertical: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+  },
+  userImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  username: {
+    fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 40,
+  },
+  iconButton: {
+    alignItems: 'center',
+  },
+  iconContainer: {
+    alignItems: 'center',
+  },
+  iconText: {
+    marginTop: 5,
   },
 });

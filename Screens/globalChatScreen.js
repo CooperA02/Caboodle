@@ -10,7 +10,8 @@ import {
   Platform,
 } from "react-native";
 import { Avatar } from "react-native-paper";
-import { fetchGlobalChat, addGlobalMessage, auth } from "../firebaseConfig";
+import { fetchGlobalChat, addGlobalMessage, auth, firestore } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function GlobalChatScreen() {
   const [globalMessages, setGlobalMessages] = useState([]);
@@ -18,8 +19,13 @@ export default function GlobalChatScreen() {
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      const globalChat = await fetchGlobalChat();
-      setGlobalMessages(globalChat);
+      try {
+        const globalChat = await fetchGlobalChat();
+        const sortedChat = globalChat.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+        setGlobalMessages(sortedChat);
+      } catch (error) {
+        console.error("Error fetching initial data:", error.message);
+      }
     };
 
     fetchInitialData();
@@ -31,10 +37,21 @@ export default function GlobalChatScreen() {
     }
     const user = auth.currentUser;
     if (user) {
-      await addGlobalMessage(user.displayName, newMessage, user.photoURL);
-      setNewMessage("");
-      const updatedGlobalChat = await fetchGlobalChat();
-      setGlobalMessages(updatedGlobalChat);
+      try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const profilePictureUrl = userDoc.exists() && userDoc.data().profilePictureUrl 
+          ? userDoc.data().profilePictureUrl 
+          : 'https://via.placeholder.com/40';
+
+        await addGlobalMessage(user.displayName, newMessage, profilePictureUrl);
+        setNewMessage("");
+        const updatedGlobalChat = await fetchGlobalChat();
+        const sortedChat = updatedGlobalChat.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
+        setGlobalMessages(sortedChat);
+      } catch (error) {
+        console.error("Error sending message:", error.message);
+      }
     }
   };
 
@@ -57,13 +74,18 @@ export default function GlobalChatScreen() {
                   isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
                 ]}
               >
-                {!isCurrentUser && <Avatar.Image size={40} source={{ uri: message.photoURL }} />}
-                <View style={[styles.messageContent, isCurrentUser ? styles.currentUserMessageContent : styles.otherUserMessageContent]}>
+                {!isCurrentUser && <Avatar.Image size={40} source={{ uri: message.profilePictureUrl }} />}
+                <View
+                  style={[
+                    styles.messageContent,
+                    isCurrentUser ? styles.currentUserMessageContent : styles.otherUserMessageContent,
+                  ]}
+                >
                   <Text style={styles.messageSender}>{message.messageSender}</Text>
                   <Text style={styles.messageText}>{message.messages}</Text>
                   <Text style={styles.messageTime}>{new Date(message.timestamp.seconds * 1000).toLocaleString()}</Text>
                 </View>
-                {isCurrentUser && <Avatar.Image size={40} source={{ uri: message.photoURL }} />}
+                {isCurrentUser && <Avatar.Image size={40} source={{ uri: message.profilePictureUrl }} />}
               </View>
             );
           })}

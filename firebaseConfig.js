@@ -16,9 +16,11 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  updateDoc,
   query,
   deleteDoc,
   serverTimestamp,
+  limit,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "firebase/storage";
@@ -96,6 +98,35 @@ const handleSaveProfile = async (
   } catch (error) {
     console.error("Error saving user profile:", error.message);
     throw error;
+  }
+};
+
+// Function to upload profile picture and update user document
+const uploadProfilePicture = async (imageUri, userId) => {
+  if (!imageUri || !userId) {
+    throw new Error('Image URI and User ID are required.');
+  }
+
+  const filename = `profile_pictures/${userId}/${new Date().toISOString()}.jpg`;
+
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, filename);
+
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    await uploadBytes(storageRef, blob);
+
+    const downloadURL = await getDownloadURL(storageRef);
+
+    const userDocRef = doc(firestore, 'users', userId);
+    await updateDoc(userDocRef, { profilePictureUrl: downloadURL });
+
+    return { url: downloadURL };
+  } catch (error) {
+    console.error('Error uploading profile picture:', error.message);
+    throw new Error('Failed to upload profile picture.');
   }
 };
 
@@ -588,37 +619,58 @@ const deletePublicItems = async (userId, catalogId, itemId) => {
     throw error;
   }
 };
+
 // Function to create a new chat between two users
-const createChat = async (user1Id, user2Id, name1, name2, message) => {
+const createChat = async (user1Id, user2Id) => {
   try {
-    const docRef = await addDoc(collection(firestore, "chats"), {
+    const user1DocRef = doc(firestore, 'users', user1Id);
+    const user1Doc = await getDoc(user1DocRef);
+    const name1 = user1Doc.exists() ? user1Doc.data().username : 'Unknown';
+
+    const user2DocRef = doc(firestore, 'users', user2Id);
+    const user2Doc = await getDoc(user2DocRef);
+    const name2 = user2Doc.exists() ? user2Doc.data().username : 'Unknown';
+
+    const chatDocRef = await addDoc(collection(firestore, "chats"), {
       chatId: null,
       user1Id: user1Id,
       user2Id: user2Id,
       name1: name1,
       name2: name2,
-      messageSender: name1,
-      messages: message,
     });
 
-    const chatDocRef = doc(collection(firestore, "chats"), docRef.id);
-    await setDoc(chatDocRef, { chatId: docRef.id }, { merge: true });
+    await setDoc(chatDocRef, { chatId: chatDocRef.id }, { merge: true });
 
-    console.log("Chat successfully created:", docRef.id);
-    return docRef.id;
+    console.log("Chat successfully created:", chatDocRef.id);
+    return chatDocRef.id;
   } catch (error) {
     console.error("Error creating chat:", error.message);
     throw error;
   }
 };
 
+
 // Function to add a message to an existing chat
-const addMessage = async (chatId, name, message) => {
+const addMessage = async (chatId, message) => {
   try {
-    const chatRef = doc(firestore, "chats", chatId);
-    await setDoc(chatRef, { messageSender: name }, { merge: true });
-    await setDoc(chatRef, { messages: message }, { merge: true });
-    console.log("Message successfully added to chat:", chatId);
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const username = userDoc.exists() ? userDoc.data().username : 'Unknown';
+      const profilePictureUrl = userDoc.exists() ? userDoc.data().profilePictureUrl : 'https://via.placeholder.com/40';
+
+      const chatRef = doc(firestore, "chats", chatId);
+      const messageRef = collection(chatRef, "messages");
+      await addDoc(messageRef, {
+        sender: username,
+        text: message,
+        timestamp: serverTimestamp(),
+        profilePictureUrl: profilePictureUrl,
+        userId: user.uid,
+      });
+      console.log("Message successfully added to chat:", chatId);
+    }
   } catch (error) {
     console.error("Error adding message to chat:", error.message);
     throw error;
@@ -628,16 +680,26 @@ const addMessage = async (chatId, name, message) => {
 // Function to fetch all chats for a specific user
 const fetchChats = async (userId) => {
   try {
-    const q = query(
+    const q1 = query(
       collection(firestore, "chats"),
-      where("user1Id", "==", userId),
+      where("user1Id", "==", userId)
+    );
+    const q2 = query(
+      collection(firestore, "chats"),
       where("user2Id", "==", userId)
     );
-    const querySnapshot = await getDocs(q);
+
+    const querySnapshot1 = await getDocs(q1);
+    const querySnapshot2 = await getDocs(q2);
+
     const chats = [];
-    querySnapshot.forEach((doc) => {
+    querySnapshot1.forEach((doc) => {
       chats.push({ id: doc.id, ...doc.data() });
     });
+    querySnapshot2.forEach((doc) => {
+      chats.push({ id: doc.id, ...doc.data() });
+    });
+
     return chats;
   } catch (error) {
     console.error("Error fetching chat data:", error.message);
@@ -645,13 +707,77 @@ const fetchChats = async (userId) => {
   }
 };
 
-// Function to search users by name
+// Function to fetch all messages for a specific chat
+const fetchMessages = async (chatId) => {
+  try {
+    const chatRef = doc(firestore, "chats", chatId);
+    const messagesRef = collection(chatRef, "messages");
+    const q = query(messagesRef, orderBy("timestamp", "asc"));
+    const querySnapshot = await getDocs(q);
+    const messages = [];
+
+    await Promise.all(querySnapshot.docs.map(async (messageDoc) => {
+      const data = messageDoc.data();
+      if (!data.userId) {
+        console.error("Message data missing userId for message ID:", messageDoc.id);
+        throw new Error("Message data missing userId");
+      }
+      const userDocRef = doc(firestore, 'users', data.userId);
+      const userDoc = await getDoc(userDocRef);
+      const username = userDoc.exists() ? userDoc.data().username : 'Unknown';
+      const profilePictureUrl = userDoc.exists() ? userDoc.data().profilePictureUrl : 'https://via.placeholder.com/40';
+
+      messages.push({
+        id: messageDoc.id,
+        ...data,
+        sender: username,
+        profilePictureUrl: profilePictureUrl,
+      });
+    }));
+
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error.message);
+    throw error;
+  }
+};
+
+// Function to fetch the last message for a specific chat
+const fetchLastMessage = async (chatId) => {
+  try {
+    const chatRef = doc(firestore, "chats", chatId);
+    const messagesRef = collection(chatRef, "messages");
+    const q = query(messagesRef, orderBy("timestamp", "desc"), limit(1)); 
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const lastMessageDoc = querySnapshot.docs[0];
+      const data = lastMessageDoc.data();
+      const timestamp = data.timestamp.toDate(); 
+
+      return {
+        text: data.text,
+        timestamp,
+      };
+    } else {
+      return {
+        text: "No messages yet",
+        timestamp: null,
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching last message:", error.message);
+    throw error;
+  }
+};
+
+// Function to search users by username
 const searchUsers = async (searchQuery) => {
   try {
     const q = query(
       collection(firestore, "users"),
-      where("name", ">=", searchQuery),
-      where("name", "<=", searchQuery + "\uf8ff")
+      where("username", ">=", searchQuery),
+      where("username", "<=", searchQuery + "\uf8ff")
     );
     const querySnapshot = await getDocs(q);
     const users = [];
@@ -677,11 +803,13 @@ const fetchGlobalChat = async () => {
       const userDocRef = doc(firestore, 'users', data.userId);
       const userDoc = await getDoc(userDocRef);
       const username = userDoc.exists() ? userDoc.data().username : 'Unknown';
-      
+      const profilePictureUrl = userDoc.exists() ? userDoc.data().profilePictureUrl : 'https://via.placeholder.com/40';
+
       messages.push({
         id: messageDoc.id,
         ...data,
         messageSender: username,
+        profilePictureUrl: profilePictureUrl, 
       });
     }));
 
@@ -719,9 +847,13 @@ export {
   auth,
   storage,
   firestore,
+  doc,
+  getDoc,
+  updateDoc,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   handleSaveProfile,
+  uploadProfilePicture,
   fetchUserData,
   createCatalog,
   fetchCatalogs,
@@ -742,6 +874,8 @@ export {
   createChat,
   addMessage,
   fetchChats,
+  fetchMessages,
+  fetchLastMessage,
   searchUsers, 
   fetchGlobalChat,
   addGlobalMessage,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
-import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { auth, fetchUserData, handleSaveProfile, uploadProfilePicture } from '../firebaseConfig'; // Import handleSaveProfile and uploadProfilePicture functions
 
 export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -17,8 +18,8 @@ export default function UserProfileScreen({ navigation }) {
         // Fetch user data from Firestore when component mounts
         const user = auth.currentUser;
         if (user) {
-          setUserId(user.uid); // Set user ID if user is authenticated
-          const userData = await fetchUserData(user.uid); // Pass user ID to fetchUserData function
+          setUserId(user.uid); // Ensure this sets the user ID correctly
+          const userData = await fetchUserData(user.uid);
           setUsername(userData.username);
           setPhoneNumber(userData.phoneNumber);
           // Update profile picture URL if available in user data
@@ -38,21 +39,62 @@ export default function UserProfileScreen({ navigation }) {
     };
 
     getUserData();
+  }, []);
 
-    // Cleanup function
-    return () => {
-    };
-  }, []); // useEffect will run only once when the component mounts
-  
-  const handleProfileSave = () => {
-    handleSaveProfile(userId, username, phoneNumber, profilePictureUrl, isPrivate); // Call the handleSaveProfile function with profile picture URL and private account option
+  const handleProfileSave = async () => {
+    try {
+      await handleSaveProfile(userId, username, phoneNumber, profilePictureUrl, isPrivate); // Save profile data
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error) {
+      console.error('Error saving profile:', error.message);
+      Alert.alert('Error', 'Failed to save profile. Please try again.');
+    }
+  };
+
+  const handleProfilePictureChange = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    console.log('Image Picker Result:', result);
+    console.log('User ID:', userId);
+
+    if (!result.canceled) {
+      const { uri } = result.assets[0]; // Get the URI from the result
+
+      // Check that URI and user ID are both defined
+      if (uri && userId) {
+        try {
+          const uploadResult = await uploadProfilePicture(uri, userId);
+          console.log('Upload Result:', uploadResult);
+          setProfilePictureUrl(uploadResult.url);
+        } catch (error) {
+          console.error('Error uploading profile picture:', error.message);
+          Alert.alert('Error', 'Failed to upload profile picture. Please try again.');
+        }
+      } else {
+        console.error('User ID or image URI is missing.');
+        Alert.alert('Error', 'User ID or image URI is missing.');
+      }
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Profile Picture */}
-        <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
+        <TouchableOpacity onPress={handleProfilePictureChange}>
+          <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
+        </TouchableOpacity>
         <View style={styles.form}>
           <TextInput
             style={styles.input}
@@ -82,7 +124,6 @@ export default function UserProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
-
     </View>
   );
 }
