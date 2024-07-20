@@ -11,12 +11,7 @@ import {
   Dimensions,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import {
-  auth,
-  fetchItem,
-  deleteAttributes,
-  deletePublicAttributes,
-} from "../firebaseConfig";
+import { auth, fetchPublicAttributes } from "../firebaseConfig";
 import {
   Searchbar,
   Avatar,
@@ -33,30 +28,22 @@ import ImageZoom from "react-native-image-pan-zoom";
 export default function ViewItemScreen({ navigation, route }) {
   const { selectedItem, selectedCatalog } = route.params;
   const [attributes, setAttributes] = useState([]);
-  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-
     const getItemData = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
           console.log(`Fetching item details for user: ${user.uid}`);
-          const itemData = await fetchItem(
-            user.uid,
-            selectedCatalog.id,
-            selectedItem.id
+          console.log(`Selected catalog: ${selectedCatalog.publicCatalogId}`);
+          console.log(`Selected item: ${selectedItem.publicItemId}`);
+          const attributeData = await fetchPublicAttributes(
+            selectedCatalog.publicCatalogId,
+            selectedItem.publicItemId
           );
-          if (isMounted) {
-            setAttributes(itemData.attributes || []);
-            setImages(itemData.images || []);
-            selectedItem.name = itemData.name;
-          }
+          setAttributes(attributeData);
         } else {
           console.log("User is not authenticated");
         }
@@ -64,9 +51,7 @@ export default function ViewItemScreen({ navigation, route }) {
         console.error("Error fetching item details:", error.message);
         setError(error.message);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -81,64 +66,6 @@ export default function ViewItemScreen({ navigation, route }) {
       unsubscribe();
     };
   }, [navigation, selectedCatalog.id, selectedItem.id]);
-
-  const handleAddAttribute = () => {
-    navigation.navigate("Create Attribute", {
-      selectedItem,
-      selectedCatalog,
-    });
-  };
-
-  const handleDeleteAttributeConfirm = (attributeId) => {
-    Alert.alert(
-      "Delete Attribute",
-      "Are you sure you want to delete this attribute?",
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },
-        {
-          text: "OK",
-          onPress: () =>
-            handleDeleteAttribute(attributeId).then(() => {
-              console.log("Attribute deleted successfully");
-            }),
-        },
-      ],
-      { cancelable: false }
-    );
-  };
-
-  const handleDeleteAttribute = async (delAttribute) => {
-    await deleteAttributes(
-      auth.currentUser.uid,
-      selectedCatalog.id,
-      selectedItem.id,
-      delAttribute.id
-    );
-    if (selectedCatalog.publicId) {
-      await deletePublicAttributes(
-        selectedCatalog.publicId,
-        selectedItem.publicId,
-        delAttribute.publicId
-      );
-    }
-    setAttributes(attributes.filter((attr) => attr.id !== delAttribute.id));
-  };
-
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
-
-  const handleImagePress = () => {
-    setModalVisible(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
 
   if (loading) {
     return (
@@ -164,26 +91,6 @@ export default function ViewItemScreen({ navigation, route }) {
       <RNPText variant="displaySmall" style={styles.itemName}>
         {selectedItem.name}
       </RNPText>
-      {images.length > 0 && (
-        <TouchableOpacity onPress={handleImagePress}>
-          <Image
-            source={{ uri: images[selectedImageIndex] }}
-            style={styles.designatedImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-      )}
-      <ScrollView horizontal contentContainerStyle={styles.imagesContainer}>
-        {images.map((imageUri, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.imageContainer}
-            onPress={() => setSelectedImageIndex(index)}
-          >
-            <Image source={{ uri: imageUri }} style={styles.image} />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
       <ScrollView style={styles.attributesContainer}>
         <View style={styles.attributeRow}>
           <Text style={styles.attributeName}>Value</Text>
@@ -199,47 +106,11 @@ export default function ViewItemScreen({ navigation, route }) {
         </View>
         {attributes.map((attr) => (
           <View key={attr.id} style={styles.attributeRow}>
-            <Text style={styles.attributeName}>{attr.name}</Text>
-            <Text style={styles.attributeValue}>{attr.value}</Text>
-            <TouchableOpacity
-              onPress={() => handleDeleteAttributeConfirm(attr)}
-            >
-              <AntDesign name="delete" size={24} color="red" />
-            </TouchableOpacity>
+            <Text style={styles.attributeName}>{attr.attributeName}</Text>
+            <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
           </View>
         ))}
       </ScrollView>
-      <View style={styles.inputContainer}>
-        <TouchableOpacity
-          style={styles.addAttributeButton}
-          onPress={handleAddAttribute}
-        >
-          <AntDesign name="pluscircleo" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
-
-      <Modal visible={modalVisible} transparent={true}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={handleCloseModal}
-          >
-            <AntDesign name="closecircle" size={24} color="white" />
-          </TouchableOpacity>
-          <ImageZoom
-            cropWidth={Dimensions.get("window").width}
-            cropHeight={Dimensions.get("window").height}
-            imageWidth={Dimensions.get("window").width}
-            imageHeight={Dimensions.get("window").height}
-          >
-            <Image
-              source={{ uri: images[selectedImageIndex] }}
-              style={styles.fullScreenImage}
-              resizeMode="contain"
-            />
-          </ImageZoom>
-        </View>
-      </Modal>
     </>
   );
 }

@@ -40,8 +40,14 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
   }, [selectedCatalog.publicCatalogId]);
 
   const handleNavigateToViewItemScreen = (itemId) => {
-    const selectedItem = items.find((item) => item.id === itemId);
-    navigation.navigate("View Item", {
+    console.log("Selected item:", itemId);
+    items.map((item) => {
+      console.log("Item: " + item.publicItemId);
+    });
+    const selectedItem = items.find((item) => item.publicItemId === itemId);
+    console.log("Selected item:", selectedItem.publicItemId);
+    console.log("Selected catalog:", selectedCatalog.publicCatalogId);
+    navigation.navigate("View Public Item", {
       selectedItem: selectedItem,
       selectedCatalog: selectedCatalog,
     });
@@ -58,7 +64,7 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
           {items.map((item) => (
             <TouchableOpacity
               key={item.id}
-              onPress={() => handleNavigateToViewItemScreen(item.id)}
+              onPress={() => handleNavigateToViewItemScreen(item.publicItemId)}
               style={styles.itemRow}
             >
               <View style={styles.itemDetails}>

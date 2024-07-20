@@ -10,7 +10,11 @@ import {
 import Header from "../Components/header";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, createAttribute } from "../firebaseConfig";
+import {
+  auth,
+  createAttribute,
+  addToPublicAttributeList,
+} from "../firebaseConfig";
 
 export default function CreateAttributeScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -25,12 +29,24 @@ export default function CreateAttributeScreen({ navigation, route }) {
     };
 
     try {
-      createAttribute(
+      const attributeId = await createAttribute(
         auth.currentUser.uid,
         selectedCatalog.id,
         selectedItem.id,
         newAttribute
       );
+      if (selectedCatalog.isPublic) {
+        addToPublicAttributeList(
+          auth.currentUser.uid,
+          selectedCatalog.id,
+          selectedCatalog.publicId,
+          selectedItem.id,
+          selectedItem.publicId,
+          attributeId,
+          newAttribute
+        );
+      }
+
       navigation.navigate("View Item", {
         selectedCatalog: selectedCatalog,
         selectedItem: selectedItem,
@@ -73,7 +89,6 @@ export default function CreateAttributeScreen({ navigation, route }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
     </View>
   );
 }

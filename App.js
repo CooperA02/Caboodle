@@ -21,6 +21,7 @@ import createAttributeScreen from "./Screens/createAttributeScreen";
 import ChatListScreen from "./Screens/chatListScreen";
 import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
+import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
 import {
   Provider as PaperProvider,
   BottomNavigation,
@@ -201,6 +202,11 @@ export default function App() {
           <Stack.Screen
             name="View Public Catalog"
             component={ViewPublicCatalogScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="View Public Item"
+            component={ViewPublicItemScreen}
             options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>
