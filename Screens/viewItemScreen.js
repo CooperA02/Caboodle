@@ -185,29 +185,31 @@ export default function ViewItemScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <ScrollView style={styles.attributesContainer}>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeName}>Value</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-            {selectedItem.value}
-          </Text>
-        </View>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeName}>Description</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-            {selectedItem.description}
-          </Text>
-        </View>
-        {attributes.map((attr) => (
-          <View key={attr.id} style={styles.attributeRow}>
-            <Text style={styles.attributeName}>{attr.name}</Text>
-            <Text style={styles.attributeValue}>{attr.value}</Text>
-            <TouchableOpacity
-              onPress={() => handleDeleteAttributeConfirm(attr)}
-            >
-              <AntDesign name="delete" size={24} color="red" />
-            </TouchableOpacity>
-          </View>
-        ))}
+  <View style={styles.attributeRow}>
+    <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 1, name: "Value", value: selectedItem.value } })}>
+      <Text style={styles.attributeName}>Value</Text>
+      <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
+    </TouchableOpacity>
+  </View>
+  <View style={styles.attributeRow}>
+    <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 2, name: "Description", value: selectedItem.description } })}>
+      <Text style={styles.attributeName}>Description</Text>
+      <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.description}</Text>
+    </TouchableOpacity>
+  </View>
+  {attributes.map((attr) => (
+  <View key={attr.id} style={styles.attributeRow}>
+    <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: attr })}>
+      <Text style={styles.attributeName}>{attr.name}</Text>
+      <Text style={styles.attributeValue}>{attr.value}</Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => handleDeleteAttributeConfirm(attr)}
+    >
+      <AntDesign name="delete" size={24} color="red" />
+    </TouchableOpacity>
+  </View>
+))}
       </ScrollView>
       <View style={styles.inputContainer}>
         <TouchableOpacity
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
   },
   attributeRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,

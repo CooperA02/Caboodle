@@ -22,6 +22,7 @@ import ChatListScreen from "./Screens/chatListScreen";
 import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
 import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
+import editAttributeScreen from "./Screens/editAttributeScreen";
 import {
   Provider as PaperProvider,
   BottomNavigation,
@@ -207,6 +208,11 @@ export default function App() {
           <Stack.Screen
             name="View Public Item"
             component={ViewPublicItemScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="Edit Attribute"
+            component={editAttributeScreen}
             options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>
