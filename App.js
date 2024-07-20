@@ -11,8 +11,6 @@ import UserHomeScreen from "./Screens/userHomeScreen";
 import CreateItemScreen from "./Screens/createItemScreen";
 import viewItemScreen from "./Screens/viewItemScreen";
 import createAttributeScreen from "./Screens/createAttributeScreen";
-<<<<<<< Updated upstream
-=======
 import ChatListScreen from "./Screens/chatListScreen";
 import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
@@ -41,32 +39,97 @@ import {
   configureFonts,
 } from "react-native-paper"; //Unused imports are still here as setup for other TODO items if there is time...
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
->>>>>>> Stashed changes
 
 const Stack = createStackNavigator();
 
+//Foundations
+function MyTabs() {
+  const [showLeftIcon, setShowLeftIcon] = useState(false);
+  const [showSubtitle, setShowSubtitle] = useState(true);
+  const [showMoreIcon, setShowMoreIcon] = useState(true);
+  const [appbarMode, setAppbarMode] = useState("small"); //TODO: Include accessibility option to give users more choice over text size
+
+  return (
+    <>
+      <Tab.Navigator //the brand new tab navigator
+        activeColor="orange" //when navbar button is pressed
+        inactiveColor="grey" //when navbar button is inactive
+        barStyle={{ backgroundColor: "white" }} //TODO: Integrate React Nav theming.  this can basically be changed to any color, however with integration of React Nav theming I can have way more subtle shading options for users to choose.
+      >
+        <Tab.Screen
+          name="Search Catalogs"
+          component={SearchCatalogsScreen}
+          options={{
+            headerShown: false, //Hack fix, but it works!
+            tabBarLabel: "Search",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="magnify" color={color} size={26} /> //Unlike Bottomtab, MaterialTab makes icons smaller by default, adjusted size accordingly
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Newsfeed"
+          component={UserNewsFeed}
+          options={{
+            headerShown: false,
+            tabBarLabel: "Feed",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons
+                name="newspaper-variant-outline"
+                color={color}
+                size={26}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Scan"
+          component={CreateCatalogScreen}
+          options={{
+            headerShown: false,
+            tabBarLabel: "Post",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons
+                name="camera-outline"
+                color={color}
+                size={26}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="My Catalogs"
+          component={CatalogsScreen}
+          options={{
+            headerShown: false,
+            tabBarLabel: "Catalogs",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons
+                name="book-open-blank-variant"
+                color={color}
+                size={26}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Chat List"
+          component={ChatListScreen}
+          options={{
+            headerShown: false,
+            tabBarLabel: "Chat",
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="chat" color={color} size={26} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </>
+  );
+}
+
 export default function App() {
   return (
-<<<<<<< Updated upstream
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-        <Stack.Screen name="UserHomeScreen" component={UserHomeScreen} />
-        <Stack.Screen name="Catalogs" component={CatalogsScreen} />
-        <Stack.Screen name="CreateCatalogScreen" component={CreateCatalogScreen}/>
-        <Stack.Screen name="ViewCatalogScreen" component={ViewCatalogScreen} />
-        <Stack.Screen name="SearchCatalogsScreen" component={SearchCatalogsScreen}/>
-        <Stack.Screen name="CreateItemScreen" component={CreateItemScreen} />
-        <Stack.Screen name="ViewItemScreen" component={viewItemScreen} />
-        <Stack.Screen name="CreateAttributeScreen" component={createAttributeScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-=======
     <PaperProvider>
       <NavigationContainer>
         <Stack.Navigator
@@ -145,6 +208,5 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
->>>>>>> Stashed changes
   );
 }

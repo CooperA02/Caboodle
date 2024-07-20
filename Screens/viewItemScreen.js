@@ -142,58 +142,8 @@ export default function ViewItemScreen({ navigation, route }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-<<<<<<< Updated upstream
-      <ScrollView style={styles.attributesContainer}>
-        {attributes.map((attr) => (
-          <View key={attr.id} style={styles.attributeRow}>
-            <Text style={styles.attributeName}>{attr.name}</Text>
-            <Text style={styles.attributeValue}>{attr.value}</Text>
-            <TouchableOpacity onPress={() => handleDeleteAttribute(attr.id)}>
-              <AntDesign name="delete" size={24} color="red" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleEditAttribute(attr.id)}>
-              <AntDesign name="edit" size={24} color="blue" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
-=======
 
 
-<ScrollView style={styles.attributesContainer}>
-
-      <View style={styles.attributeRow}>
-        <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 1, name: "Value", value: selectedItem.value } })}>
-          <Text style={styles.attributeName}>Value</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.attributeRow}>
-        <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 2, name: "Description", value: selectedItem.description } })}>
-          <Text style={styles.attributeName}>Description</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.description}</Text>
-        </TouchableOpacity>
-      </View>
-
-
-  {attributes.map((attr) => (
-    <View key={attr.id} style={styles.attributeRow}>
-      <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: attr })}>
-        <Text style={styles.attributeName}>{attr.name}</Text>
-        <Text style={styles.attributeValue}>{attr.value}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => handleDeleteAttributeConfirm(attr)}
-      >
-        <AntDesign name="delete" size={24} color="red" />
-      </TouchableOpacity>
-    </View>
-  ))}
-</ScrollView>
-
-
->>>>>>> Stashed changes
       <View style={styles.inputContainer}>
         <TouchableOpacity
           style={styles.addAttributeButton}
@@ -202,9 +152,6 @@ export default function ViewItemScreen({ navigation, route }) {
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
-<<<<<<< Updated upstream
-    </View>
-=======
       <Modal visible={modalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <TouchableOpacity
@@ -227,8 +174,7 @@ export default function ViewItemScreen({ navigation, route }) {
           </ImageZoom>
         </View>
       </Modal>
-    </>
->>>>>>> Stashed changes
+    </View>
   );
 }
 
