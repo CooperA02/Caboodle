@@ -142,6 +142,7 @@ export default function ViewItemScreen({ navigation, route }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
+<<<<<<< Updated upstream
       <ScrollView style={styles.attributesContainer}>
         {attributes.map((attr) => (
           <View key={attr.id} style={styles.attributeRow}>
@@ -156,6 +157,43 @@ export default function ViewItemScreen({ navigation, route }) {
           </View>
         ))}
       </ScrollView>
+=======
+
+
+<ScrollView style={styles.attributesContainer}>
+
+      <View style={styles.attributeRow}>
+        <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 1, name: "Value", value: selectedItem.value } })}>
+          <Text style={styles.attributeName}>Value</Text>
+          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.attributeRow}>
+        <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: { id: 2, name: "Description", value: selectedItem.description } })}>
+          <Text style={styles.attributeName}>Description</Text>
+          <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.description}</Text>
+        </TouchableOpacity>
+      </View>
+
+
+  {attributes.map((attr) => (
+    <View key={attr.id} style={styles.attributeRow}>
+      <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { attribute: attr })}>
+        <Text style={styles.attributeName}>{attr.name}</Text>
+        <Text style={styles.attributeValue}>{attr.value}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => handleDeleteAttributeConfirm(attr)}
+      >
+        <AntDesign name="delete" size={24} color="red" />
+      </TouchableOpacity>
+    </View>
+  ))}
+</ScrollView>
+
+
+>>>>>>> Stashed changes
       <View style={styles.inputContainer}>
         <TouchableOpacity
           style={styles.addAttributeButton}
@@ -164,7 +202,33 @@ export default function ViewItemScreen({ navigation, route }) {
           <AntDesign name="pluscircleo" size={24} color="black" />
         </TouchableOpacity>
       </View>
+<<<<<<< Updated upstream
     </View>
+=======
+      <Modal visible={modalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={handleCloseModal}
+          >
+            <AntDesign name="closecircle" size={24} color="white" />
+          </TouchableOpacity>
+          <ImageZoom
+            cropWidth={Dimensions.get("window").width}
+            cropHeight={Dimensions.get("window").height}
+            imageWidth={Dimensions.get("window").width}
+            imageHeight={Dimensions.get("window").height}
+          >
+            <Image
+              source={{ uri: images[selectedImageIndex] }}
+              style={styles.fullScreenImage}
+              resizeMode="contain"
+            />
+          </ImageZoom>
+        </View>
+      </Modal>
+    </>
+>>>>>>> Stashed changes
   );
 }
 
@@ -200,12 +264,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   attributeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: '#ddd',
   },
   attributeName: {
     fontSize: 18,

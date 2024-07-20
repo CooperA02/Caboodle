@@ -549,6 +549,143 @@ const deletePublicItems = async (userId, catalogId, itemId) => {
   }
 };
 
+<<<<<<< Updated upstream
+=======
+const addToPublicAttributeList = async (
+  UserId,
+  catalogId,
+  pubCatalogId,
+  itemId,
+  pubItemId,
+  attributeId,
+  attribute
+) => {
+  try {
+    const docRef = await addDoc(
+      collection(
+        firestore,
+        "publicCatalogs",
+        pubCatalogId,
+        "publicItems",
+        pubItemId,
+        "publicAttributes"
+      ),
+      {
+        publicAttributeId: null,
+        attributeId: attributeId,
+        attributeName: attribute.name,
+        attributeValue: attribute.value,
+      }
+    );
+
+    const attributeDocRef = doc(
+      collection(
+        firestore,
+        "publicCatalogs",
+        pubCatalogId,
+        "publicItems",
+        pubItemId,
+        "publicAttributes"
+      ),
+      docRef.id
+    );
+    await setDoc(
+      attributeDocRef,
+      { publicAttributeId: docRef.id },
+      { merge: true }
+    );
+    console.log("Attribute successfully added to public list:", docRef.id);
+
+    const attributeRef = doc(
+      collection(
+        firestore,
+        "users",
+        UserId,
+        "catalogs",
+        catalogId,
+        "items",
+        itemId,
+        "attributes"
+      ),
+      attributeId
+    );
+    await setDoc(attributeRef, { publicId: docRef.id }, { merge: true });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding item to public list:", error.message);
+    throw error;
+  }
+};
+
+const fetchPublicAttributes = async (pubCatalogId, pubItemId) => {
+  try {
+    const q = query(
+      collection(
+        firestore,
+        "publicCatalogs",
+        pubCatalogId,
+        "publicItems",
+        pubItemId,
+        "publicAttributes"
+      )
+    );
+    const querySnapshot = await getDocs(q);
+    const publicAttributes = [];
+    querySnapshot.forEach((doc) => {
+      publicAttributes.push(doc.data());
+    });
+    console.log("Public Attributes fetched successfully.");
+    return publicAttributes;
+  } catch (error) {
+    console.error("Error fetching public attribute data:", error.message);
+    throw error;
+  }
+};
+
+const deletePublicAttributes = async (pubCatalogId, pubItemId, attributeId) => {
+  try {
+    const q = query(
+      collection(
+        firestore,
+        "publicCatalogs",
+        pubCatalogId,
+        "publicItems",
+        pubItemId,
+        "publicAttributes"
+      )
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      if (doc.data().publicAttributeId === attributeId) {
+        deleteDoc(doc.ref);
+      }
+      console.log("Attribute successfully deleted:", attributeId);
+    });
+  } catch (error) {
+    console.error("Error deleting public attribute data:", error.message);
+    throw error;
+  }
+};
+
+const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, newValue) => {
+  console.log("Attribute:", attribute);
+  try {
+    // Update private attribute
+    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
+    await updateDoc(privateAttrRef, { name: newName, value: newValue });
+
+    // Update public attribute
+    const publicAttrRef = doc(firestore, "publicCatalogs", catalogId, "publicItems", itemId, "publicAttributes", attributeId);
+    await updateDoc(publicAttrRef, { name: newName, value: newValue });
+
+    console.log("Attribute successfully updated:", attributeId);
+  } catch (error) {
+    console.error("Error updating attribute:", error.message);
+    throw error;
+  }
+};
+
+>>>>>>> Stashed changes
 const createChat = async (user1Id, user2Id, name1, name2, message) => {
   try {
     const docRef = await addDoc(collection(firestore, "chats"), {
@@ -629,4 +766,5 @@ export {
   createChat,
   addMessage,
   fetchChats,
+  updateAttribute,
 };
