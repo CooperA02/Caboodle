@@ -97,6 +97,9 @@ export default function ViewCatalogScreen({ navigation, route }) {
             <TouchableOpacity
               key={item.id}
               onPress={() => handleNavigateToViewItemScreen(item.id)}
+              onLongPress={() =>
+                navigation.navigate('Edit Item', { item })
+              }
               style={styles.itemRow}
             >
               <Image

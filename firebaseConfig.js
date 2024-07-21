@@ -16,6 +16,7 @@ import {
   addDoc,
   query,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -711,6 +712,37 @@ const deletePublicAttributes = async (pubCatalogId, pubItemId, attributeId) => {
   }
 };
 
+const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, newValue) => {
+  try {
+    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
+    await updateDoc(privateAttrRef, { name: newName, value: newValue });
+
+    const publicAttrRef = doc(firestore, "publicCatalogs", catalogId, "publicItems", itemId, "publicAttributes", attributeId);
+    await updateDoc(publicAttrRef, { name: newName, value: newValue });
+
+    console.log("Attribute successfully updated:", attributeId);
+  } catch (error) {
+    console.error("Error updating attribute:", error.message);
+    throw error;
+  }
+};
+
+const updateCatalogName = async (catalogId, newName) => {
+  const db = firebase.firestore();
+  const docRef = db.collection('catalogs').doc(catalogId);
+  await docRef.update({ name: newName });
+}
+
+const updateItemName = async (itemId, newItemName) => {
+  const db = firebase.firestore();
+  const docRef = db.collection('items').doc(itemId);
+  await docRef.update({ name: newItemName });
+}
+
+export const testFunction = () => {
+  console.log("Test function called");
+};
+
 const createChat = async (user1Id, user2Id, name1, name2, message) => {
   try {
     const docRef = await addDoc(collection(firestore, "chats"), {
@@ -794,4 +826,5 @@ export {
   createChat,
   addMessage,
   fetchChats,
+  updateAttribute,
 };
