@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Image, Pressable, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import Header from "../Components/header";
-import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar } from 'react-native-paper';
+import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar, useTheme } from 'react-native-paper';
 import { auth, fetchPublicCatalogs } from "../firebaseConfig";
+import { TouchableRipple, Switch } from 'react-native-paper';
+import { PreferencesContext } from '../Components/preferencesContext';
 
 
 const windowWidth = Dimensions.get("window").width;
@@ -12,6 +14,7 @@ const windowWidth = Dimensions.get("window").width;
 export default function SearchCatalogsScreen({ navigation, route }) {
   const [catalogs, setCatalogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const { colors } = useTheme();
 
   useEffect(() => {
     const getCatalogData = async () => {
@@ -43,6 +46,23 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     console.log("Searching for:", searchQuery);
   };
 
+  const fetchPublicItems = async () => {
+    try {
+      const q = query(
+        collection(firestore, "publicCatalogs", "yourPubCatalogId", "publicItems")
+      );
+      const querySnapshot = await getDocs(q);
+      let publicItems = [];
+      querySnapshot.forEach((doc) => {
+        const itemData = doc.data();
+        publicItems.push(itemData);
+      });
+      return publicItems;
+    } catch (error) {
+      console.error("Error fetching public items:", error.message);
+      throw error;
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPressOut={() => Keyboard.dismiss()}>
@@ -57,7 +77,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
             onChangeText={(query) => setSearchQuery(query)}
             value={searchQuery}
             style={styles.searchbar}
-            mode="outlined"
+            mode="bar"
             showDivider={false}
             onIconPress={() => {
               Keyboard.dismiss();
@@ -107,7 +127,7 @@ const styles = StyleSheet.create({
   },
   catalogsContainer: {
     width: "100%",
-    backgroundColor: "white",
+
   },
   grid: {
     flexDirection: "row",

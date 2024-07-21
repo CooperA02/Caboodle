@@ -80,7 +80,6 @@ export default function UserNewsFeed({ navigation, route }) {
             onPress={() => navigation.navigate("Profile")}
           />
         </Appbar.Header>
-        {/* What worked yesterday is broken today.  Replaced with text till fix pushed. Please let this be the last time*/}
         <ScrollView style={styles.catalogsContainer}>
           <View style={styles.row}>
             {catalogs.map((catalog) => (
@@ -106,20 +105,22 @@ export default function UserNewsFeed({ navigation, route }) {
                     fontFamily: "System",
                     fontSize: 18,
                     fontWeight: "bold",
-                    color: "#333",
+
                   }}
                   subtitleStyle={{
                     fontFamily: "System",
                     fontSize: 14,
                     fontStyle: "italic",
-                    color: "#666",
+
                   }}
                 />
                 <Card.Content>
                   <RNPText variant="labelMedium">
-                    {/* For the Feed, this description will be shown unlike the search page*/}
-                    Description: {catalog.description}
+                    {/* For the user's Feed, a description will be shown*/}
                     Category: {catalog.category}
+                  </RNPText>
+                  <RNPText variant="labelMedium">
+                    {catalog.description}
                   </RNPText>
                 </Card.Content>
               </Card>
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   catalogsContainer: {
     width: "100%",
     length: "50%",
-    backgroundColor: "#fff",
+
   },
   row: {
     flexDirection: "row",

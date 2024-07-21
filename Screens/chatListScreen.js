@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Appbar, Avatar, Button, IconButton, Paragraph, Text as RNPText } from 'react-native-paper';
+import { Appbar, Avatar, Button, IconButton, Paragraph, Text as RNPText, Text } from 'react-native-paper';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -15,7 +15,6 @@ export default function ChatListScreen({ navigation, route }) {
     <Tab.Navigator
       initialRouteName="Chat"
       screenOptions={{
-        tabBarActiveTintColor: 'blue',
         tabBarLabelStyle: { fontSize: 16, textTransform: 'none'  },
         
       }}

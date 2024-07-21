@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -15,7 +14,7 @@ import {
   deleteItems,
   deletePublicItems,
 } from "../firebaseConfig";
-import { Appbar, Button, Divider, List } from "react-native-paper";
+import { Appbar, Button, Divider, List, Text } from "react-native-paper";
 
 export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -83,16 +82,14 @@ export default function ViewCatalogScreen({ navigation, route }) {
   //temporary styling and formatting
   return (
     <>
-      <Appbar.Header>
+
+      <ScrollView style={styles.itemsContainer}>
+        <List.Section title={selectedCatalog.name}>
         <View style={styles.inputContainer}>
           <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <AntDesign name="pluscircleo" size={24} color="black" />
+            <AntDesign name="pluscircleo" size={24} color="black"/>
           </TouchableOpacity>
         </View>
-        <Appbar.Content title={selectedCatalog.name} />
-      </Appbar.Header>
-      <ScrollView style={styles.itemsContainer}>
-        <List.Section>
           {items.map((item) => (
             <TouchableOpacity
               key={item.id}
@@ -125,7 +122,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+
     padding: 20,
     marginTop: 40,
   },
@@ -136,12 +133,12 @@ const styles = StyleSheet.create({
   },
   itemsContainer: {
     marginBottom: 20,
-    backgroundColor: "white",
+
   },
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
@@ -169,6 +166,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#007bff",
     padding: 10,
     borderRadius: 5,
+    marginLeft: 25,
   },
   goBackButton: {
     alignSelf: "flex-start",

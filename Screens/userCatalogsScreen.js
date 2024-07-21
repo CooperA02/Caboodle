@@ -117,11 +117,13 @@ export default function Catalogs({ navigation, route }) {
               {catalogs.map((catalog) => (
                 <Card key={catalog.id} style={styles.card} mode="elevated" onPress={() => handleCatalogSelection(catalog)} onLongPress={() => handleLongPress(catalog)}>
                   <Card.Cover source={{ uri: catalog.images && catalog.images.length > 0? catalog.images[0] : "https://via.placeholder.com/150" }} />
-                  <Card.Title title={catalog.name}  titleStyle={{ fontFamily: 'System', fontSize: 18, fontWeight: 'bold', color: '#333' }}/>
+                  <Card.Title title={catalog.name}  titleStyle={{ fontFamily: 'System', fontSize: 18, fontWeight: 'bold'}}/>
                   <Card.Content>
                     <RNPText variant="labelMedium">
-                      Description: {catalog.description}
                       Category: {catalog.category}
+                    </RNPText>
+                    <RNPText variant="labelMedium">
+                      Description: {catalog.description}
                     </RNPText>
                   </Card.Content>
                 </Card>
@@ -138,7 +140,7 @@ export default function Catalogs({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+
   },
   content: {
     flex: 1,

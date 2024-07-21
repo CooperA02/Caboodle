@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
 import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
+import { useTheme, Appbar, TouchableRipple, Switch, TextInput, Text } from 'react-native-paper';
+import { PreferencesContext } from '../Components/preferencesContext';
 
 export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -8,6 +10,7 @@ export default function UserProfileScreen({ navigation }) {
   const [userId, setUserId] = useState(null); // State to store user ID
   const [isPrivate, setIsPrivate] = useState(false); // State for private account option
   const [profilePictureUrl, setProfilePictureUrl] = useState('https://via.placeholder.com/150'); // Placeholder image URL
+  const { isThemeDark, toggleTheme } = useContext(PreferencesContext);
 
   //TODO -- Settings will go here as a button, take the user to a drawer with accessibility options
 
@@ -67,6 +70,14 @@ export default function UserProfileScreen({ navigation }) {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
           />
+          <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>Dark Mode</Text>
+          <Switch
+            color={'lightblue'}
+            value={isThemeDark}
+            onValueChange={toggleTheme}
+          />
+          </View>
           {/* Private Account Option */}
           <View style={styles.switchContainer}>
             <Text style={styles.switchLabel}>Private Account</Text>
@@ -80,6 +91,16 @@ export default function UserProfileScreen({ navigation }) {
           <TouchableOpacity style={styles.button} onPress={handleProfileSave}>
             <Text style={styles.buttonText}>Save Profile</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 10 }]} // Adjust styling as needed
+            onPress={() => navigation.navigate('Accessibility')}>
+          <Text style={styles.buttonText}>Accessibility</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={[styles.button, { marginTop: 10 }]} // Adjust styling as needed
+            onPress={() => navigation.navigate('SignUp')}>
+          <Text style={styles.buttonText}>Sign Out</Text>
+        </TouchableOpacity>
         </View>
       </View>
 
@@ -90,7 +111,7 @@ export default function UserProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+
   },
   content: {
     flex: 1,
