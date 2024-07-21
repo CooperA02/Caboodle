@@ -15,6 +15,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
   const [catalogs, setCatalogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const { colors } = useTheme();
+  const [filteredCatalogs, setFilteredCatalogs] = useState([]);
 
   useEffect(() => {
     const getCatalogData = async () => {
@@ -42,8 +43,17 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     navigation.navigate("View Catalog", { selectedCatalog: catalog });
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     console.log("Searching for:", searchQuery);
+    const fetchedCatalogs = await fetchPublicCatalogs(searchQuery);
+    setFilteredCatalogs(fetchedCatalogs);
+  
+    // Check if there's exactly one catalog matching the search query
+    if (fetchedCatalogs.length === 1) {
+      const selectedCatalog = fetchedCatalogs[0];
+      //setFilteredCatalogs(filteredCatalogs);
+      navigation.navigate("View Catalog", { selectedCatalog });
+    }
   };
 
   const fetchPublicItems = async () => {
@@ -89,6 +99,11 @@ export default function SearchCatalogsScreen({ navigation, route }) {
           />
         </Pressable>
         <ScrollView style={styles.catalogsContainer}>
+          {filteredCatalogs.map((catalog) => (
+            <TouchableOpacity key={catalog.publicCatalogId} onPress={() => handleCatalogSelection(catalog)} style={styles.gridItem}>
+              <Image source={{ uri: catalog.catalogImages && catalog.catalogImages.length > 0 ? catalog.catalogImages[0] : "https://via.placeholder.com/150" }} style={styles.image} />
+            </TouchableOpacity>
+          ))}
           <View style={styles.grid}>
             {catalogs.map((catalog) => (
               <TouchableOpacity key={catalog.id} onPress={() => handleCatalogSelection(catalog)} style={styles.gridItem}>

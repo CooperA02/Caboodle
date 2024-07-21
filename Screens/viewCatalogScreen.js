@@ -23,22 +23,23 @@ export default function ViewCatalogScreen({ navigation, route }) {
   useEffect(() => {
     const getItemData = async () => {
       try {
-        const user = auth.currentUser;
-        if (user) {
-          const itemData = await fetchItems(user.uid, selectedCatalog.id);
+        // Check if the catalog is public
+        if (!selectedCatalog.userOwned) {
+          const itemData = await fetchPublicItems(selectedCatalog.publicId); // Adjusted to fetch public items
           setItems(itemData);
         } else {
-          console.log("User is not authenticated");
+          const itemData = await fetchItems(auth.currentUser.uid, selectedCatalog.id);
+          setItems(itemData);
         }
       } catch (error) {
-        console.error("Error fetching Item:", error.message);
+        console.error("Error fetching Items:", error.message);
       }
     };
-
+  
     getItemData();
-
+  
     return () => {};
-  }, [selectedCatalog.id]);
+  }, [selectedCatalog]);
 
   const handleAddItem = () => {
     navigation.navigate("New Item", {
