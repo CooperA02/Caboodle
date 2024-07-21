@@ -3,18 +3,9 @@ import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { updateAttribute } from "../firebaseConfig";
 import { testFunction } from "../firebaseConfig";
 
-console.log(testFunction); // Add this li
-
-testFunction(); // Call the test function to see if it logs correctly
-
-console.log(updateAttribute); // Add this line
 
 export default function EditAttributeScreen({ route, navigation }) {
-    const { attribute, userId, catalogId, itemId } = route.params;
-    console.log(updateAttribute); // Add this line
-    console.log(testFunction); // Add this li
-
-testFunction(); // Call the test function to see if it logs correctly
+    const { attribute, userId, catalogId, itemId, publicCatalogId, publicItemId } = route.params;
 
     // Initialize state conditionally based on the existence of attribute
     const [name, setName] = useState(attribute ? attribute.name : '');
@@ -29,15 +20,15 @@ testFunction(); // Call the test function to see if it logs correctly
 
     const handleSubmit = async () => {
         try {
-            testFunction();
-            // Ensure attributeId is passed correctly
+            if (publicCatalogId && publicItemId) {
+                console.log(`Updating public catalog/item with IDs: ${publicCatalogId}, ${publicItemId}`);
+            }
             await updateAttribute(userId, catalogId, itemId, attribute.id, name, value);
-            console.log('Attribute updated:', userId, catalogId, itemId, attribute.id, name, value);
             Alert.alert('Success', 'Attribute updated successfully');
             navigation.goBack();
         } catch (error) {
             console.error('Error updating attribute:', error);
-            Alert.alert('Error', 'Failed to update attribute');
+            Alert.alert('Error', 'Failed to update attribute', error);
         }
     };
   

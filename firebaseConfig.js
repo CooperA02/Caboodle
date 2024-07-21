@@ -712,13 +712,18 @@ const deletePublicAttributes = async (pubCatalogId, pubItemId, attributeId) => {
   }
 };
 
-const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, newValue) => {
+const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, newValue, publicCatalogId = null, publicItemId = null) => {
   try {
     const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
     await updateDoc(privateAttrRef, { name: newName, value: newValue });
 
-    const publicAttrRef = doc(firestore, "publicCatalogs", catalogId, "publicItems", itemId, "publicAttributes", attributeId);
-    await updateDoc(publicAttrRef, { name: newName, value: newValue });
+    if (publicCatalogId && publicItemId) {
+      const publicAttrRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId, "publicAttributes", attributeId);
+      await updateDoc(publicAttrRef, { name: newName, value: newValue });
+      console.log("Public attribute successfully updated:", attributeId);
+    } else {
+      console.log("No public catalog/item ID provided, skipping public attribute update.");
+    }
 
     console.log("Attribute successfully updated:", attributeId);
   } catch (error) {
@@ -726,6 +731,7 @@ const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, 
     throw error;
   }
 };
+
 
 const updateCatalogName = async (catalogId, newName) => {
   const db = firebase.firestore();
@@ -827,4 +833,6 @@ export {
   addMessage,
   fetchChats,
   updateAttribute,
+  updateCatalogName,
+  updateItemName
 };

@@ -79,7 +79,7 @@ export default function CreateCatalogScreen({ navigation }) {
             catalogId
           );
         }
-        navigation.navigate("Catalogs", {});
+        navigation.navigate("View Catalog", {});
       } catch (e) {
         console.error("Error saving catalog data: ", e);
       }

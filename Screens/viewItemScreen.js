@@ -42,6 +42,8 @@ export default function ViewItemScreen({ navigation, route }) {
   const userId = auth.currentUser.uid;
   const catalogId = selectedCatalog.id;
   const itemId = selectedItem.id;
+  const pubCatalogId = selectedCatalog.pubCatalogId;
+  const pubItemId = selectedItem.pubItemId;
 
   useEffect(() => {
     let isMounted = true;
@@ -220,7 +222,9 @@ export default function ViewItemScreen({ navigation, route }) {
         attribute: attr,
         userId: userId,
         catalogId: catalogId,
-        itemId: itemId
+        itemId: itemId,
+        publicCatalogId: pubCatalogId,
+        publicItemId: pubItemId,
       })}>
         <Text style={styles.attributeName}>{attr.name}</Text>
         <Text style={styles.attributeValue}>{attr.value}</Text>
