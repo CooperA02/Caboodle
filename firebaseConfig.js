@@ -491,20 +491,10 @@ const addToPublicCatalogList = async (userId, name, catalog, catalogId) => {
   }
 };
 
-const fetchPublicCatalogs = async (searchQuery) => {
+const fetchPublicCatalogs = async () => {
   try {
-    let querySnapshot = [];
-    if (searchQuery) {
-      const q = query(
-        collection(firestore, "publicCatalogs"),
-        where("catalogName", ">=", searchQuery),
-        where("catalogName", "<=", searchQuery + "\uf8ff") // Unicode replacement character to ensure full-text search
-      );
-      querySnapshot = await getDocs(q);
-    } else {
-      const q = query(collection(firestore, "publicCatalogs"));
-      querySnapshot = await getDocs(q);
-    }
+    const q = query(collection(firestore, "publicCatalogs"));
+    const querySnapshot = await getDocs(q);
     const publicCatalogs = [];
     querySnapshot.forEach((doc) => {
       publicCatalogs.push(doc.data());
@@ -514,7 +504,7 @@ const fetchPublicCatalogs = async (searchQuery) => {
     console.error("Error fetching public catalog data:", error.message);
     throw error;
   }
-};s
+};
 
 const deletePublicCatalogs = async (userId, catalogId) => {
   try {

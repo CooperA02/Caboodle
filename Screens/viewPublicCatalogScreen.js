@@ -12,21 +12,19 @@ import { auth, fetchPublicItems } from "../firebaseConfig";
 import { Appbar, Button, Divider, List, Text } from "react-native-paper";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
-  const { selectedCatalog } = route.params;
+  const [selectedCatalog, setSelectedCatalog] = useState(null); 
   const [items, setItems] = useState([]);
 
   useEffect(() => {
     const getItemData = async () => {
       try {
         const user = auth.currentUser;
-        if (user) {
-          console.log("catalogId: " + selectedCatalog.publicCatalogId);
-          const itemData = await fetchPublicItems(
-            selectedCatalog.publicCatalogId
-          );
+        if (user && route.params && route.params.selectedCatalog) {
+          setSelectedCatalog(route.params.selectedCatalog);
+          const itemData = await fetchPublicItems(route.params.selectedCatalog.publicCatalogId);
           setItems(itemData);
         } else {
-          console.log("User is not authenticated");
+          console.log("User is not authenticated or selectedCatalog is missing");
         }
       } catch (error) {
         console.error("Error fetching Item:", error.message);
@@ -36,23 +34,21 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
     getItemData();
 
     return () => {};
-  }, [selectedCatalog.publicCatalogId]);
+  }, [route.params?.selectedCatalog]);
+
+  // Check if selectedCatalog is null or undefined
+  if (!selectedCatalog) {
+    return null; // or return loading indicator or some fallback UI
+  }
 
   const handleNavigateToViewItemScreen = (itemId) => {
-    console.log("Selected item:", itemId);
-    items.map((item) => {
-      console.log("Item: " + item.publicItemId);
-    });
     const selectedItem = items.find((item) => item.publicItemId === itemId);
-    console.log("Selected item:", selectedItem.publicItemId);
-    console.log("Selected catalog:", selectedCatalog.publicCatalogId);
     navigation.navigate("View Public Item", {
       selectedItem: selectedItem,
       selectedCatalog: selectedCatalog,
     });
   };
 
-  //temporary styling and formatting
   return (
     <>
       <Appbar.Header>
