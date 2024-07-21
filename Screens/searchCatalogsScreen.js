@@ -40,7 +40,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
   }, [navigation, route]);
 
   const handleCatalogSelection = (catalog) => {
-    navigation.navigate("View Catalog", { selectedCatalog: catalog });
+    navigation.navigate("View Public Catalog", { selectedCatalog: catalog });
   };
 
   const handleSearch = async () => {
@@ -52,7 +52,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     if (fetchedCatalogs.length === 1) {
       const selectedCatalog = fetchedCatalogs[0];
       //setFilteredCatalogs(filteredCatalogs);
-      navigation.navigate("View Catalog", { selectedCatalog });
+      navigation.navigate("View Public Catalog", { selectedCatalog });
     }
   };
 

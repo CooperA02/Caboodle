@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -10,7 +9,7 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { auth, fetchPublicItems } from "../firebaseConfig";
-import { Appbar, Button, Divider, List } from "react-native-paper";
+import { Appbar, Button, Divider, List, Text } from "react-native-paper";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
@@ -81,7 +80,6 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     padding: 20,
     marginTop: 40,
   },
@@ -92,7 +90,6 @@ const styles = StyleSheet.create({
   },
   itemsContainer: {
     marginBottom: 20,
-    backgroundColor: "white",
   },
   itemRow: {
     flexDirection: "row",
