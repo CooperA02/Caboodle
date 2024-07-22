@@ -4,12 +4,12 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
+    "build": "npx expo export:web",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
   "dependencies": {
-    "proxy": "http://localhost:8081",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-firebase/app": "^20.1.0",
     "@react-native-firebase/firestore": "^20.1.0",
