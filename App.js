@@ -21,6 +21,9 @@ import ChatListScreen from "./Screens/chatListScreen";
 import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
 import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
+import EditAttributeScreen from "./Screens/editAttributeScreen";
+import editCatalogScreen from "./Screens/editCatalogScreen";
+import editItemScreen from "./Screens/editItemScreen";
 import AccessibilityScreen from './Screens/accessibilityScreen';
 import UserChatsScreen from "./Screens/userChatScreen";
 import GlobalChatScreen from "./Screens/globalChatScreen";
@@ -242,6 +245,21 @@ export default function App() {
           <Stack.Screen
             name="DirectChat"
             component={DirectChatsScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="Edit Attribute"
+            component={EditAttributeScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="Edit Catalog"
+            component={editCatalogScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="Edit Item"
+            component={editItemScreen}
             options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>

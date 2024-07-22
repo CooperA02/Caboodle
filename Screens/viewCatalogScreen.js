@@ -20,6 +20,10 @@ export default function ViewCatalogScreen({ navigation, route }) {
   const { selectedCatalog } = route.params;
   const [items, setItems] = useState([]);
 
+  const userId = auth.currentUser.uid;
+  const catalogId = selectedCatalog.id;
+  const pubCatalogId = selectedCatalog.pubCatalogId;
+
   useEffect(() => {
     const getItemData = async () => {
       try {
@@ -94,6 +98,15 @@ export default function ViewCatalogScreen({ navigation, route }) {
             <TouchableOpacity
               key={item.id}
               onPress={() => handleNavigateToViewItemScreen(item.id)}
+              onLongPress={() =>
+                navigation.navigate('Edit Item', { 
+                  item: item,
+                  userId: userId,
+                  catalogId: catalogId,
+                  publicCatalogId: pubCatalogId,
+
+                 })
+              }
               style={styles.itemRow}
             >
               <Image
