@@ -9,7 +9,9 @@ import {
   Image,
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Appbar, Avatar, Button, IconButton, Paragraph, Text as RNPText, Text } from 'react-native-paper';
+import { Appbar, Button, Card } from 'react-native-paper';
+import { auth, searchUsers, createChat, fetchChats } from "../firebaseConfig";
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 const Tab = createMaterialTopTabNavigator();
 
