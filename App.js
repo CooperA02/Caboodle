@@ -22,6 +22,9 @@ import UserNewsFeed from "./Screens/userNewsFeed";
 import ViewPublicCatalogScreen from "./Screens/viewPublicCatalogScreen";
 import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
 import AccessibilityScreen from './Screens/accessibilityScreen';
+import UserChatsScreen from "./Screens/userChatScreen";
+import GlobalChatScreen from "./Screens/globalChatScreen";
+import DirectChatsScreen from "./Screens/directChatScreen";
 import {
   Provider as PaperProvider,
   adaptNavigationTheme,
@@ -225,6 +228,21 @@ export default function App() {
             name="Accessibility"
             component={AccessibilityScreen}
             options={{ headerShown: true }} 
+          />
+                    <Stack.Screen
+            name="UserChatScreen"
+            component={UserChatsScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="GlobalChat"
+            component={GlobalChatScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="DirectChat"
+            component={DirectChatsScreen}
+            options={{ headerShown: true }} // Hide header
           />
         </Stack.Navigator>
       </NavigationContainer>
