@@ -16,7 +16,6 @@ import {
   getDoc,
   getDocs,
   addDoc,
-  updateDoc,
   query,
   deleteDoc,
   updateDoc,
@@ -841,7 +840,7 @@ const createChat = async (user1Id, user2Id) => {
     console.error("Error creating chat:", error.message);
     throw error;
   }
-};
+};}
 
 
 // Function to add a message to an existing chat
