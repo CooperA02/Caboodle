@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -12,7 +11,7 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { Text, Appbar } from "react-native-paper";
+import { Text, Appbar, TextInput } from "react-native-paper";
 import { auth, createItem, addToPublicItemList } from "../firebaseConfig";
 
 export default function CreateItemScreen({ navigation, route }) {
@@ -211,7 +210,7 @@ export default function CreateItemScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
+
     paddingHorizontal: 20,
   },
   content: {

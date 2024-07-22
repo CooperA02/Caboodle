@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -21,6 +19,8 @@ import {
   Paragraph,
   Text as RNPText,
   Appbar,
+  Text,
+  TextInput,
 } from 'react-native-paper';
 import {
   auth,
@@ -136,7 +136,7 @@ export default function CreateCatalogScreen({ navigation }) {
           placeholder="Name Your Catalog"
           value={catalogName}
           onChangeText={setCatalogName}
-          style={[styles.input, { marginTop: 100 }]}
+          style={[styles.input, { marginTop: 15 },]}
         />
         <TextInput
           placeholder="Category"
@@ -145,11 +145,14 @@ export default function CreateCatalogScreen({ navigation }) {
           style={styles.input}
         />
         <TextInput
-          placeholder="Describe The Catalog"
+        mode="flat"
+        label="Describe The Catalog"
+        multiline
+        style={styles.fixedHeight}
           value={catalogDescription}
           onChangeText={setCatalogDescription}
-          multiline={true}
-          style={styles.descriptionInput}
+          
+          
         />
         <View style={styles.switchContainer}>
           <Text style={styles.switchLabel}>Public Catalog</Text>
@@ -189,7 +192,7 @@ export default function CreateCatalogScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+
   },
   content: {
     flex: 1,
@@ -207,7 +210,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#c7c4bf",
     marginVertical: 5,
-    marginTop: 40,
+    marginTop: 10,
     borderRadius: 10,
     padding: 10,
   },
@@ -274,11 +277,13 @@ const styles = StyleSheet.create({
   switchLabel: {
     flex: 1,
     fontSize: 16,
+    marginTop: 20,
   },
   switchButton: {
     padding: 5,
     backgroundColor: "#ddd",
     borderRadius: 10,
+    marginTop: 20,
   },
   switchButtonOn: {
     backgroundColor: "#007bff",

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -22,6 +21,7 @@ import {
   Paragraph,
   Text as RNPText,
   Appbar,
+  Text,
 } from "react-native-paper";
 import ImageZoom from "react-native-image-pan-zoom";
 
@@ -118,7 +118,6 @@ export default function ViewItemScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     padding: 20,
     marginTop: 40,
   },

@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   NavigationContainer,
-  useRoute,
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+//import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import SignUpScreen from "./Screens/signUpScreen";
 import UserProfileScreen from "./Screens/userProfileScreen";
@@ -25,32 +24,28 @@ import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
 import EditAttributeScreen from "./Screens/editAttributeScreen";
 import editCatalogScreen from "./Screens/editCatalogScreen";
 import editItemScreen from "./Screens/editItemScreen";
+import AccessibilityScreen from './Screens/accessibilityScreen';
+import UserChatsScreen from "./Screens/userChatScreen";
+import GlobalChatScreen from "./Screens/globalChatScreen";
+import DirectChatsScreen from "./Screens/directChatScreen";
 import {
   Provider as PaperProvider,
-  BottomNavigation,
-  Appbar,
-  FAB,
-  List,
-  Paragraph,
-  RadioButton,
-  Snackbar,
-  Switch,
-  Text,
-  useSafeAreaInsets,
+  adaptNavigationTheme,
   MD3DarkTheme,
   MD3LightTheme,
-  MD2DarkTheme,
-  MD2LightTheme,
-  MD2Theme,
-  MD3Theme,
-  useTheme,
-  adaptNavigationTheme,
-  configureFonts,
-} from "react-native-paper"; //Unused imports are still here as setup for other TODO items if there is time...
+} from "react-native-paper";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import merge from 'deepmerge';
+import { PreferencesContext } from './Components/preferencesContext';
 
 const Tab = createMaterialBottomTabNavigator();
 const Stack = createStackNavigator();
+const { LightTheme, DarkTheme } = adaptNavigationTheme({
+  reactNavigationLight: NavigationDefaultTheme,
+  reactNavigationDark: NavigationDarkTheme,
+});
+const CombinedDefaultTheme = merge(MD3LightTheme, LightTheme);
+const CombinedDarkTheme = merge(MD3DarkTheme, DarkTheme);
 
 //Foundations
 function MyTabs() {
@@ -64,7 +59,6 @@ function MyTabs() {
       <Tab.Navigator //the brand new tab navigator
         activeColor="orange" //when navbar button is pressed
         inactiveColor="grey" //when navbar button is inactive
-        barStyle={{ backgroundColor: "white" }} //TODO: Integrate React Nav theming.  this can basically be changed to any color, however with integration of React Nav theming I can have way more subtle shading options for users to choose.
       >
         <Tab.Screen
           name="Search Catalogs"
@@ -73,7 +67,7 @@ function MyTabs() {
             headerShown: false, //Hack fix, but it works!
             tabBarLabel: "Search",
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="magnify" color={color} size={26} /> //Unlike Bottomtab, MaterialTab makes icons smaller by default, adjusted size accordingly
+              <MaterialCommunityIcons name="magnify" color={color} size={26} />
             ),
           }}
         />
@@ -138,12 +132,33 @@ function MyTabs() {
   );
 }
 
-//TODO -- figure out why, unlike android, iPhone status icons show for a few minutes, sometimes vanish for 5-10 minutes then reappear during same session but not every session.
-//No chatgpt, no phind, no AI, cooking
+
 export default function App() {
+  const [isThemeDark, setIsThemeDark] = React.useState(false);
+  const [textSize, setTextSize] = useState('small');
+  let theme = isThemeDark ? CombinedDarkTheme : CombinedDefaultTheme;
+
+  const toggleTheme = React.useCallback(() => {
+    return setIsThemeDark(!isThemeDark);
+  }, [isThemeDark]);
+
+  const toggleTextSize = useCallback(() => {
+    setTextSize(prevTextSize => 
+      prevTextSize === 'small' ? 'medium' : prevTextSize === 'medium' ? 'large' : 'small'
+    );
+  }, []);
+
+  const preferences = React.useMemo(
+    () => ({
+      toggleTheme,
+      isThemeDark,
+    }),
+    [toggleTheme, isThemeDark, toggleTextSize, textSize]
+  );
   return (
-    <PaperProvider>
-      <NavigationContainer>
+    <PreferencesContext.Provider value={preferences}>
+    <PaperProvider theme={theme}>
+      <NavigationContainer theme={theme}>
         <Stack.Navigator
           initialRouteName="SignUp"
           listeners={({ state }) => ({
@@ -205,11 +220,31 @@ export default function App() {
           <Stack.Screen
             name="View Public Catalog"
             component={ViewPublicCatalogScreen}
-            options={{ headerShown: true }} // Hide header
+            options={{ headerShown: true }} 
           />
           <Stack.Screen
             name="View Public Item"
             component={ViewPublicItemScreen}
+            options={{ headerShown: true }} 
+          />
+          <Stack.Screen
+            name="Accessibility"
+            component={AccessibilityScreen}
+            options={{ headerShown: true }} 
+          />
+                    <Stack.Screen
+            name="UserChatScreen"
+            component={UserChatsScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="GlobalChat"
+            component={GlobalChatScreen}
+            options={{ headerShown: true }} // Hide header
+          />
+          <Stack.Screen
+            name="DirectChat"
+            component={DirectChatsScreen}
             options={{ headerShown: true }} // Hide header
           />
           <Stack.Screen
@@ -230,5 +265,6 @@ export default function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
+    </PreferencesContext.Provider>
   );
 }

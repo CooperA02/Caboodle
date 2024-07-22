@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
-import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
+import React, { useState, useEffect, useContext } from 'react';
+import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import { auth, fetchUserData, handleSaveProfile, uploadProfilePicture } from '../firebaseConfig'; // Import handleSaveProfile function
+import { useTheme, Appbar, TouchableRipple, Switch, TextInput, Text} from 'react-native-paper';
+import * as ImagePicker from 'expo-image-picker';
+import { PreferencesContext } from '../Components/preferencesContext';
 
 export default function UserProfileScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -8,6 +11,7 @@ export default function UserProfileScreen({ navigation }) {
   const [userId, setUserId] = useState(null); // State to store user ID
   const [isPrivate, setIsPrivate] = useState(false); // State for private account option
   const [profilePictureUrl, setProfilePictureUrl] = useState('https://via.placeholder.com/150'); // Placeholder image URL
+  const { isThemeDark, toggleTheme } = useContext(PreferencesContext);
 
   //TODO -- Settings will go here as a button, take the user to a drawer with accessibility options
 
@@ -44,15 +48,59 @@ export default function UserProfileScreen({ navigation }) {
     };
   }, []); // useEffect will run only once when the component mounts
   
-  const handleProfileSave = () => {
-    handleSaveProfile(userId, username, phoneNumber, profilePictureUrl, isPrivate); // Call the handleSaveProfile function with profile picture URL and private account option
+  const handleProfileSave = async () => {
+    try {
+      await handleSaveProfile(userId, username, phoneNumber, profilePictureUrl, isPrivate); // Save profile data
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error) {
+      console.error('Error saving profile:', error.message);
+      Alert.alert('Error', 'Failed to save profile. Please try again.');
+    }
+  };
+
+  const handleProfilePictureChange = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    console.log('Image Picker Result:', result);
+    console.log('User ID:', userId);
+
+    if (!result.canceled) {
+      const { uri } = result.assets[0]; // Get the URI from the result
+
+      // Check that URI and user ID are both defined
+      if (uri && userId) {
+        try {
+          const uploadResult = await uploadProfilePicture(uri, userId);
+          console.log('Upload Result:', uploadResult);
+          setProfilePictureUrl(uploadResult.url);
+        } catch (error) {
+          console.error('Error uploading profile picture:', error.message);
+          Alert.alert('Error', 'Failed to upload profile picture. Please try again.');
+        }
+      } else {
+        console.error('User ID or image URI is missing.');
+        Alert.alert('Error', 'User ID or image URI is missing.');
+      }    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Profile Picture */}
-        <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
+        <TouchableOpacity onPress={handleProfilePictureChange}>
+          <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
+        </TouchableOpacity>
         <View style={styles.form}>
           <TextInput
             style={styles.input}
@@ -67,6 +115,14 @@ export default function UserProfileScreen({ navigation }) {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
           />
+          <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>Dark Mode</Text>
+          <Switch
+            color={'lightblue'}
+            value={isThemeDark}
+            onValueChange={toggleTheme}
+          />
+          </View>
           {/* Private Account Option */}
           <View style={styles.switchContainer}>
             <Text style={styles.switchLabel}>Private Account</Text>
@@ -80,6 +136,16 @@ export default function UserProfileScreen({ navigation }) {
           <TouchableOpacity style={styles.button} onPress={handleProfileSave}>
             <Text style={styles.buttonText}>Save Profile</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 10 }]} // Adjust styling as needed
+            onPress={() => navigation.navigate('Accessibility')}>
+          <Text style={styles.buttonText}>Accessibility</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+            style={[styles.button, { marginTop: 10 }]} // Adjust styling as needed
+            onPress={() => navigation.navigate('SignUp')}>
+          <Text style={styles.buttonText}>Sign Out</Text>
+        </TouchableOpacity>
         </View>
       </View>
 
@@ -90,7 +156,6 @@ export default function UserProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
