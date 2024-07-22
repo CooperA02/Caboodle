@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
+
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image,
+
 } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Appbar, Button, Card } from 'react-native-paper';
+import { Appbar, Button, Card, Text, TextInput, Image } from 'react-native-paper';
 import { auth, searchUsers, createChat, fetchChats } from "../firebaseConfig";
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
@@ -25,7 +24,7 @@ export default function ChatListScreen({ navigation }) {
       <Tab.Navigator
         initialRouteName="Chat"
         screenOptions={{
-          tabBarActiveTintColor: 'blue',
+          //tabBarActiveTintColor: 'blue',
           tabBarLabelStyle: { fontSize: 16, textTransform: 'none' },
         }}
       >

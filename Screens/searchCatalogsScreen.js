@@ -49,7 +49,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
           onChangeText={handleSearch}
         />
         {loading ? (
-          <Text>Loading...</Text>
+          <Text>Searching...</Text>
         ) : (
           <ScrollView style={styles.catalogsContainer}>
             <View style={styles.row}>
