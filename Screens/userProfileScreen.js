@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
-import { auth, fetchUserData, handleSaveProfile } from '../firebaseConfig'; // Import handleSaveProfile function
-import { useTheme, Appbar, TouchableRipple, Switch, TextInput, Text } from 'react-native-paper';
+import { auth, fetchUserData, handleSaveProfile, uploadProfilePicture } from '../firebaseConfig'; // Import handleSaveProfile function
+import { useTheme, Appbar, TouchableRipple, Switch, TextInput, Text} from 'react-native-paper';
+import * as ImagePicker from 'expo-image-picker';
 import { PreferencesContext } from '../Components/preferencesContext';
 
 export default function UserProfileScreen({ navigation }) {
