@@ -4,7 +4,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
-    "build": "npx expo export",
+    "build": "expo export --public-url <https://caboodle-njuz27tmk-cooper-armstrongs-projects.vercel.app/>",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"

@@ -2,11 +2,8 @@
     "version": 2,
     "builds": [
       {
-        "src": "dist/**",
-        "use": "@vercel/static",
-        "config": {
-          "distDir": "web-build"
-        }
+        "src": "web-build/**/*",
+        "use": "@vercel/static"
       }
     ],
     "routes": [
