@@ -712,15 +712,14 @@ const deletePublicAttributes = async (pubCatalogId, pubItemId, attributeId) => {
   }
 };
 
-const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, newValue, publicCatalogId = null, publicItemId = null) => {
+const updateAttribute = async (userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, publicAttributeId, newName, newValue) => {
   try {
     const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
     await updateDoc(privateAttrRef, { name: newName, value: newValue });
 
     if (publicCatalogId && publicItemId) {
-      const publicAttrRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId, "publicAttributes", attributeId);
+      const publicAttrRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId, "publicAttributes", publicAttributeId);
       await updateDoc(publicAttrRef, { name: newName, value: newValue });
-      console.log("Public attribute successfully updated:", attributeId);
     } else {
       console.log("No public catalog/item ID provided, skipping public attribute update.");
     }
@@ -732,18 +731,47 @@ const updateAttribute = async (userId, catalogId, itemId, attributeId, newName, 
   }
 };
 
+const updateCatalogName = async (userId, catalogId, publicCatalogId, newName) => {
+  try {
+    const privateCatRef = doc(firestore, "users", userId, "catalogs", catalogId);
+    await updateDoc(privateCatRef, { name: newName });
 
-const updateCatalogName = async (catalogId, newName) => {
-  const db = firebase.firestore();
-  const docRef = db.collection('catalogs').doc(catalogId);
-  await docRef.update({ name: newName });
-}
+    if (publicCatalogId) {
+      const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
+      await updateDoc(publicCatRef, { name: newName });
+      console.log("Public Catalog successfully updated:", publicCatalogId);
+    } else {
+      console.log("No public catalog ID provided, skipping public catalog update.");
+    }
 
-const updateItemName = async (itemId, newItemName) => {
-  const db = firebase.firestore();
-  const docRef = db.collection('items').doc(itemId);
-  await docRef.update({ name: newItemName });
-}
+    console.log("Catalog successfully updated:", catalogId);
+  } catch (error) {
+    console.error("Error updating Catalog:", error.message);
+    throw error;
+  }
+};
+
+
+const updateItemName = async (userId, catalogId, publicCatalogId, itemId, publicItemId, newName) => {
+  try {
+    const privateItemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    await updateDoc(privateItemRef, { name: newName});
+
+    if (publicCatalogId && publicItemId) {
+      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+      await updateDoc(publicItemRef, { name: newName});
+      console.log("Public Item successfully updated:", itemId);
+    } else {
+      console.log("No public item ID provided, skipping public Item update.");
+    }
+
+    console.log("Attribute successfully updated:", itemId);
+  } catch (error) {
+    console.error("Error updating Item:", error.message);
+    throw error;
+  }
+};
+
 
 export const testFunction = () => {
   console.log("Test function called");

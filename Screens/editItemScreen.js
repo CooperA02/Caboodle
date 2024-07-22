@@ -3,12 +3,12 @@ import { View, TextInput, Button, Alert } from 'react-native';
 import { updateItemName } from "../firebaseConfig";
 
 export default function EditItemScreen({ route, navigation }) {
-  const { item } = route.params;
+  const { userId, item, catalogId, publicCatalogId} = route.params;
   const [name, setName] = useState(item.name);
 
   const handleSubmit = async () => {
     try {
-      await updateItemName(item.id, name);
+      await updateItemName(userId, catalogId, publicCatalogId, item.id, item.publicId, name);
       Alert.alert('Success', 'Item name updated successfully');
       navigation.goBack();
     } catch (error) {

@@ -32,6 +32,8 @@ export default function Catalogs({ navigation, route }) {
   const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [filterMenuVisible, setFilterMenuVisible] = useState(false);
 
+  const userId = auth.currentUser.uid;
+
   useEffect(() => {
     const getCatalogData = async () => {
       try {
@@ -120,7 +122,11 @@ export default function Catalogs({ navigation, route }) {
                 style={styles.card}
                 mode="elevated"
                 onPress={() => handleCatalogSelection(catalog)}
-                onLongPress={() =>  navigation.navigate('Edit Catalog', { catalog })
+                onLongPress={() =>  navigation.navigate('Edit Catalog', 
+                  { 
+                    userId: userId,
+                    catalog: catalog,
+                    })
                 }>
                   <Card.Cover source={{ uri: catalog.images && catalog.images.length > 0? catalog.images[0] : "https://via.placeholder.com/150" }} />
                   <Card.Title title={catalog.name}  titleStyle={{ fontFamily: 'System', fontSize: 18, fontWeight: 'bold', color: '#333' }}/>

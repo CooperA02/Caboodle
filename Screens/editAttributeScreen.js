@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { updateAttribute } from "../firebaseConfig";
-import { testFunction } from "../firebaseConfig";
 
 
 export default function EditAttributeScreen({ route, navigation }) {
-    const { attribute, userId, catalogId, itemId, publicCatalogId, publicItemId } = route.params;
+    const { attribute, userId, catalogId, itemId, pubCatalogId, pubItemId } = route.params;
+    console.log(route.params);
+    console.log("EditAttributes Function Check: ", typeof userId, typeof catalogId, typeof pubCatalogId, typeof itemId, typeof pubItemId, typeof attribute.id, typeof name, typeof  value);
 
-    // Initialize state conditionally based on the existence of attribute
+
     const [name, setName] = useState(attribute ? attribute.name : '');
     const [value, setValue] = useState(attribute ? attribute.value : '');
 
@@ -19,11 +20,20 @@ export default function EditAttributeScreen({ route, navigation }) {
     }, [attribute]);
 
     const handleSubmit = async () => {
+        console.log(userId, catalogId, pubCatalogId, itemId, pubItemId, attribute.id, attribute.publicId, name, value);
+        console.log("just problem ones ID: " , typeof attribute.publicId);
+        console.log("inside handle submit: " , typeof userId, typeof catalogId, typeof pubCatalogId, typeof itemId, typeof pubItemId, typeof attribute.id, typeof attribute.publicId, typeof name, typeof  value);        
+        if (!attribute.publicId) {
+            attribute.publicId = null;
+        }
+        if (!pubItemId) {
+            pubItemId = null;
+        }
+        if (!pubCatalogId) {
+            pubCatalogId = null;
+        }
         try {
-            if (publicCatalogId && publicItemId) {
-                console.log(`Updating public catalog/item with IDs: ${publicCatalogId}, ${publicItemId}`);
-            }
-            await updateAttribute(userId, catalogId, itemId, attribute.id, name, value);
+            await updateAttribute(userId, catalogId, pubCatalogId, itemId, pubItemId, attribute.id, attribute.publicId, name, value);
             Alert.alert('Success', 'Attribute updated successfully');
             navigation.goBack();
         } catch (error) {

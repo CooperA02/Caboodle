@@ -41,9 +41,11 @@ export default function ViewItemScreen({ navigation, route }) {
 
   const userId = auth.currentUser.uid;
   const catalogId = selectedCatalog.id;
+  const pubCatalogId = selectedCatalog.publicId;
   const itemId = selectedItem.id;
-  const pubCatalogId = selectedCatalog.pubCatalogId;
-  const pubItemId = selectedItem.pubItemId;
+  const pubItemId = selectedItem.publicId;
+  console.log('ViewItemScreen check: ', typeof pubCatalogId, typeof pubItemId);
+  console.log('ViewItemScreen check: ', pubCatalogId, pubItemId);
 
   useEffect(() => {
     let isMounted = true;
@@ -198,7 +200,8 @@ export default function ViewItemScreen({ navigation, route }) {
       userId: userId,
       catalogId: catalogId,
       itemId: itemId
-    })}>
+    })
+    }>
       <Text style={styles.attributeName}>Value</Text>
       <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
     </TouchableOpacity>
@@ -218,13 +221,14 @@ export default function ViewItemScreen({ navigation, route }) {
   {/* Dynamically Mapped Attributes */}
   {attributes.map((attr) => (
     <View key={attr.id} style={styles.attributeRow}>
-      <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { 
+      <TouchableOpacity onPress={() => 
+      navigation.navigate('Edit Attribute', { 
         attribute: attr,
         userId: userId,
         catalogId: catalogId,
         itemId: itemId,
-        publicCatalogId: pubCatalogId,
-        publicItemId: pubItemId,
+        pubCatalogId: pubCatalogId,
+        pubItemId: pubItemId
       })}>
         <Text style={styles.attributeName}>{attr.name}</Text>
         <Text style={styles.attributeValue}>{attr.value}</Text>
