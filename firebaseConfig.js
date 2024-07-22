@@ -811,8 +811,6 @@ export const testFunction = () => {
   console.log("Test function called");
 };
 
-const createChat = async (user1Id, user2Id, name1, name2, message) => {
-
 // Function to create a new chat between two users
 const createChat = async (user1Id, user2Id) => {
   try {
@@ -840,7 +838,7 @@ const createChat = async (user1Id, user2Id) => {
     console.error("Error creating chat:", error.message);
     throw error;
   }
-};}
+};
 
 
 // Function to add a message to an existing chat

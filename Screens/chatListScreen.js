@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import {
-  View,
-
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-
-} from "react-native";
+import { View, TouchableOpacity, StyleSheet, ScrollView, Image } from "react-native";
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Appbar, Button, Card, Text, TextInput, Image } from 'react-native-paper';
+import { Appbar, Button, Card, Text, TextInput, Surface, card } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, searchUsers, createChat, fetchChats } from "../firebaseConfig";
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 const Tab = createMaterialTopTabNavigator();
 
