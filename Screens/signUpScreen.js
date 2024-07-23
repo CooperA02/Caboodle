@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebaseConfig'; // Import the Firebase auth object and authentication functions
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, Keyboard } from 'react-native';
+import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
-
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -44,48 +43,45 @@ export default function SignUpScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={{ flex: 1 }}>
-      <View style={styles.header}>
-      <Image
-          source={require('../assets/logo-png.png')} 
-          style={styles.logo}
-        />
-      </View>
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCompleteType="email"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            autoCapitalize="none"
-            autoCompleteType="password"
-            value={password}
-            onChangeText={setPassword}
+        <View style={styles.header}>
+          <Image
+            source={require('../assets/logo-png.png')}
+            style={styles.logo}
           />
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-            <Text style={styles.buttonText}>Sign In</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
-            <Text style={styles.buttonText}>Create Account</Text>
-          </TouchableOpacity>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCompleteType="email"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry
+              autoCapitalize="none"
+              autoCompleteType="password"
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
+              <Text style={styles.buttonText}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+          {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
-        {/* Display error message if there is an error */}
-        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
-      </View>
-      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -93,14 +89,14 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start', 
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 20,
     backgroundColor: '#fff',
   },
   header: {
-    position: 'absolute', 
-    top: 80, // Lowered from 120 to move the logo higher up
+    position: 'absolute',
+    top: 80,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -115,11 +111,11 @@ const styles = StyleSheet.create({
     color: '#555',
   },*/
   form: {
-    marginTop: 150, 
+    marginTop: 150,
     width: '100%',
   },
   inputContainer: {
-    marginTop: 150, 
+    marginTop: 150,
   },
   input: {
     height: 40,
@@ -140,7 +136,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     width: '45%',
-    height: 40, // Fixed height for buttons
+    height: 40,
     justifyContent: 'center',
   },
   buttonText: {
