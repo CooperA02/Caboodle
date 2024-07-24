@@ -21,13 +21,14 @@ import {
   Appbar,
   Text,
   TextInput,
-} from 'react-native-paper';
+} from "react-native-paper";
 import {
   auth,
   createCatalog,
   storage,
   addToPublicCatalogList,
   fetchUserData,
+  fetchCatalogs,
 } from "../firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -67,7 +68,6 @@ export default function CreateCatalogScreen({ navigation }) {
         images: imageUrls, // Add the image URLs to the new catalog
         isPublic: isPublic,
       };
-
       try {
         const catalogId = await createCatalog(auth.currentUser.uid, newCatalog);
         if (isPublic) {
@@ -79,7 +79,7 @@ export default function CreateCatalogScreen({ navigation }) {
             catalogId
           );
         }
-        navigation.navigate("View Catalog", {});
+        navigation.navigate("My Catalogs", {});
       } catch (e) {
         console.error("Error saving catalog data: ", e);
       }
@@ -109,82 +109,78 @@ export default function CreateCatalogScreen({ navigation }) {
 
   return (
     <>
-    <Appbar.Header>
-      <Appbar.Content title="Create New Catalog"/>
-    </Appbar.Header>
-    <View style={styles.container}>
-
-      <ScrollView style={styles.content}>
-        <View style={styles.buttonWrapper}>
-          <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ marginRight: 10, marginBottom: 15 }}>
-                Add Item Photos
+      <Appbar.Header>
+        <Appbar.Content title="Create New Catalog" />
+      </Appbar.Header>
+      <View style={styles.container}>
+        <ScrollView style={styles.content}>
+          <View style={styles.buttonWrapper}>
+            <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ marginRight: 10, marginBottom: 15 }}>
+                  Add Item Photos
+                </Text>
+                <AntDesign name="pluscircleo" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.imagesContainer}>
+            {selectedImages.map((imageUri, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{ uri: imageUri }} style={styles.image} />
+              </View>
+            ))}
+          </View>
+          <TextInput
+            placeholder="Name Your Catalog"
+            value={catalogName}
+            onChangeText={setCatalogName}
+            style={[styles.input, { marginTop: 15 }]}
+          />
+          <TextInput
+            placeholder="Category"
+            value={catalogCategory}
+            onChangeText={setCatalogCategory}
+            style={styles.input}
+          />
+          <TextInput
+            mode="flat"
+            label="Describe The Catalog"
+            multiline
+            style={styles.fixedHeight}
+            value={catalogDescription}
+            onChangeText={setCatalogDescription}
+          />
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchLabel}>Public Catalog</Text>
+            <TouchableOpacity
+              style={[
+                styles.switchButton,
+                isPublic ? styles.switchButtonOn : null,
+              ]}
+              onPress={() => setIsPrivate(!isPublic)}
+            >
+              <Text style={styles.switchButtonText}>
+                {isPublic ? "ON" : "OFF"}
               </Text>
-              <AntDesign name="pluscircleo" size={24} color="black" />
-            </View>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.imagesContainer}>
-          {selectedImages.map((imageUri, index) => (
-            <View key={index} style={styles.imageContainer}>
-              <Image source={{ uri: imageUri }} style={styles.image} />
-            </View>
-          ))}
-        </View>
-        <TextInput
-          placeholder="Name Your Catalog"
-          value={catalogName}
-          onChangeText={setCatalogName}
-          style={[styles.input, { marginTop: 15 },]}
-        />
-        <TextInput
-          placeholder="Category"
-          value={catalogCategory}
-          onChangeText={setCatalogCategory}
-          style={styles.input}
-        />
-        <TextInput
-        mode="flat"
-        label="Describe The Catalog"
-        multiline
-        style={styles.fixedHeight}
-          value={catalogDescription}
-          onChangeText={setCatalogDescription}
-          
-          
-        />
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>Public Catalog</Text>
-          <TouchableOpacity
-            style={[
-              styles.switchButton,
-              isPublic ? styles.switchButtonOn : null,
-            ]}
-            onPress={() => setIsPrivate(!isPublic)}
-          >
-            <Text style={styles.switchButtonText}>
-              {isPublic ? "ON" : "OFF"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={handleCreateCatalog}
-          >
-            <Text style={styles.buttonText}>Create</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-    </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={handleCreateCatalog}
+            >
+              <Text style={styles.buttonText}>Create</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
     </>
   );
 }
@@ -192,7 +188,6 @@ export default function CreateCatalogScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
   },
   content: {
     flex: 1,

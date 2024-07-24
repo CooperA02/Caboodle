@@ -89,12 +89,11 @@ export default function UserNewsFeed({ navigation, route }) {
                 mode="elevated"
                 onPress={() => handleCatalogSelection(catalog)}
               >
-                {/* TODO: Catalog cover images are not displaying. Tyler and Desmond to work on.*/}
                 <Card.Cover
                   source={{
                     uri:
-                      catalog.images && catalog.images.length > 0
-                        ? catalog.images[0]
+                      catalog.catalogImages && catalog.catalogImages.length > 0
+                        ? catalog.catalogImages[0]
                         : "https://via.placeholder.com/150",
                   }}
                 />
@@ -105,22 +104,20 @@ export default function UserNewsFeed({ navigation, route }) {
                     fontFamily: "System",
                     fontSize: 18,
                     fontWeight: "bold",
-
                   }}
                   subtitleStyle={{
                     fontFamily: "System",
                     fontSize: 14,
                     fontStyle: "italic",
-
                   }}
                 />
                 <Card.Content>
                   <RNPText variant="labelMedium">
                     {/* For the user's Feed, a description will be shown*/}
-                    Category: {catalog.category}
+                    Category: {catalog.catalogCategory}
                   </RNPText>
                   <RNPText variant="labelMedium">
-                    {catalog.description}
+                    Description: {catalog.catalogDescription}
                   </RNPText>
                 </Card.Content>
               </Card>
@@ -166,7 +163,6 @@ const styles = StyleSheet.create({
   catalogsContainer: {
     width: "100%",
     length: "50%",
-
   },
   row: {
     flexDirection: "row",

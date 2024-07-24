@@ -12,7 +12,7 @@ import { auth, fetchPublicItems } from "../firebaseConfig";
 import { Appbar, Button, Divider, List, Text } from "react-native-paper";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
-  const [selectedCatalog, setSelectedCatalog] = useState(null); 
+  const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -21,10 +21,14 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
         const user = auth.currentUser;
         if (user && route.params && route.params.selectedCatalog) {
           setSelectedCatalog(route.params.selectedCatalog);
-          const itemData = await fetchPublicItems(route.params.selectedCatalog.publicCatalogId);
+          const itemData = await fetchPublicItems(
+            route.params.selectedCatalog.publicCatalogId
+          );
           setItems(itemData);
         } else {
-          console.log("User is not authenticated or selectedCatalog is missing");
+          console.log(
+            "User is not authenticated or selectedCatalog is missing"
+          );
         }
       } catch (error) {
         console.error("Error fetching Item:", error.message);
@@ -54,8 +58,19 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
       <Appbar.Header>
         <Appbar.Content title={selectedCatalog.name} />
       </Appbar.Header>
+      <Text style={styles.catalogName}>
+        Created By: {selectedCatalog.userName}
+      </Text>
+      <Text style={styles.catalogName}>
+        Description: {selectedCatalog.catalogDescription}
+      </Text>
       <ScrollView style={styles.itemsContainer}>
         <List.Section>
+          <View style={styles.itemDetails}>
+            <Text style={styles.itemName}>Item</Text>
+            <Text style={styles.itemName}>Value</Text>
+            <Text style={styles.itemName}>Description</Text>
+          </View>
           {items.map((item) => (
             <TouchableOpacity
               key={item.id}
@@ -64,6 +79,8 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
             >
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.itemName}</Text>
+                <Text style={styles.itemName}>{item.itemValue}</Text>
+                <Text style={styles.itemName}>{item.itemDescription}</Text>
               </View>
             </TouchableOpacity>
           ))}

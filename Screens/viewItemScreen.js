@@ -44,8 +44,8 @@ export default function ViewItemScreen({ navigation, route }) {
   const pubCatalogId = selectedCatalog.publicId;
   const itemId = selectedItem.id;
   const pubItemId = selectedItem.publicId;
-  console.log('ViewItemScreen check: ', typeof pubCatalogId, typeof pubItemId);
-  console.log('ViewItemScreen check: ', pubCatalogId, pubItemId);
+  console.log("ViewItemScreen check: ", typeof pubCatalogId, typeof pubItemId);
+  console.log("ViewItemScreen check: ", pubCatalogId, pubItemId);
 
   useEffect(() => {
     let isMounted = true;
@@ -60,6 +60,7 @@ export default function ViewItemScreen({ navigation, route }) {
             selectedCatalog.id,
             selectedItem.id
           );
+          console.log(isMounted);
           if (isMounted) {
             setAttributes(itemData.attributes || []);
             setImages(itemData.images || []);
@@ -88,7 +89,7 @@ export default function ViewItemScreen({ navigation, route }) {
       isMounted = false;
       unsubscribe();
     };
-  }, [navigation, selectedCatalog.id, selectedItem.id]);
+  }, [navigation, route]);
 
   const handleAddAttribute = () => {
     navigation.navigate("Create Attribute", {
@@ -193,52 +194,72 @@ export default function ViewItemScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <ScrollView style={styles.attributesContainer}>
-  {/* Hardcoded Attributes */}
-  <View style={styles.attributeRow}>
-    <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { 
-      attribute: { id: 1, name: "Value", value: selectedItem.value },
-      userId: userId,
-      catalogId: catalogId,
-      itemId: itemId
-    })
-    }>
-      <Text style={styles.attributeName}>Value</Text>
-      <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.value}</Text>
-    </TouchableOpacity>
-  </View>
-  <View style={styles.attributeRow}>
-    <TouchableOpacity onPress={() => navigation.navigate('Edit Attribute', { 
-      attribute: { id: 2, name: "Description", value: selectedItem.description },
-      userId: userId,
-      catalogId: catalogId,
-      itemId: itemId
-    })}>
-      <Text style={styles.attributeName}>Description</Text>
-      <Text style={[styles.attributeValue, styles.topAttributeValue]}>{selectedItem.description}</Text>
-    </TouchableOpacity>
-  </View>
+        {/* Hardcoded Attributes */}
+        <View style={styles.attributeRow}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Edit Attribute", {
+                attribute: { id: 1, name: "Value", value: selectedItem.value },
+                userId: userId,
+                catalogId: catalogId,
+                itemId: itemId,
+              })
+            }
+          >
+            <Text style={styles.attributeName}>Value</Text>
+            <Text style={[styles.attributeValue, styles.topAttributeValue]}>
+              {selectedItem.value}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.attributeRow}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("Edit Attribute", {
+                attribute: {
+                  id: 2,
+                  name: "Description",
+                  value: selectedItem.description,
+                },
+                userId: userId,
+                catalogId: catalogId,
+                itemId: itemId,
+              })
+            }
+          >
+            <Text style={styles.attributeName}>Description</Text>
+            <Text style={[styles.attributeValue, styles.topAttributeValue]}>
+              {selectedItem.description}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-  {/* Dynamically Mapped Attributes */}
-  {attributes.map((attr) => (
-    <View key={attr.id} style={styles.attributeRow}>
-      <TouchableOpacity onPress={() => 
-      navigation.navigate('Edit Attribute', { 
-        attribute: attr,
-        userId: userId,
-        catalogId: catalogId,
-        itemId: itemId,
-        pubCatalogId: pubCatalogId,
-        pubItemId: pubItemId
-      })}>
-        <Text style={styles.attributeName}>{attr.name}</Text>
-        <Text style={styles.attributeValue}>{attr.value}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => handleDeleteAttributeConfirm(attr)}>
-        <AntDesign name="delete" size={24} color="red" />
-      </TouchableOpacity>
-    </View>
-  ))}
-</ScrollView>
+        {/* Dynamically Mapped Attributes */}
+        {attributes.map((attr) => (
+          <View key={attr.id} style={styles.attributeRow}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Edit Attribute", {
+                  attribute: attr,
+                  userId: userId,
+                  catalogId: catalogId,
+                  itemId: itemId,
+                  pubCatalogId: pubCatalogId,
+                  pubItemId: pubItemId,
+                })
+              }
+            >
+              <Text style={styles.attributeName}>{attr.name}</Text>
+              <Text style={styles.attributeValue}>{attr.value}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleDeleteAttributeConfirm(attr)}
+            >
+              <AntDesign name="delete" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
       <View style={styles.inputContainer}>
         <TouchableOpacity
           style={styles.addAttributeButton}

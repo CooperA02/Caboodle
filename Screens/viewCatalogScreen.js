@@ -42,7 +42,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
     getItemData();
 
     return () => {};
-  }, [selectedCatalog.id]);
+  }, [navigation, route]);
 
   const handleAddItem = () => {
     navigation.navigate("New Item", {
@@ -86,26 +86,24 @@ export default function ViewCatalogScreen({ navigation, route }) {
   //temporary styling and formatting
   return (
     <>
-
       <ScrollView style={styles.itemsContainer}>
         <List.Section title={selectedCatalog.name}>
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <AntDesign name="pluscircleo" size={24} color="black"/>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.inputContainer}>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+              <AntDesign name="pluscircleo" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
           {items.map((item) => (
             <TouchableOpacity
               key={item.id}
               onPress={() => handleNavigateToViewItemScreen(item.id)}
               onLongPress={() =>
-                navigation.navigate('Edit Item', { 
+                navigation.navigate("Edit Item", {
                   item: item,
                   userId: userId,
                   catalogId: catalogId,
                   publicCatalogId: pubCatalogId,
-
-                 })
+                })
               }
               style={styles.itemRow}
             >
@@ -146,7 +144,6 @@ const styles = StyleSheet.create({
   },
   itemsContainer: {
     marginBottom: 20,
-
   },
   itemRow: {
     flexDirection: "row",
