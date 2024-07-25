@@ -4,6 +4,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { Appbar, Button, Card, Text, TextInput, Surface, card } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { auth, searchUsers, createChat, fetchChats } from "../firebaseConfig";
+import DirectChatScreen from './directChatScreen'; // Import the DirectChatScreen component
+import GlobalChatScreen from './globalChatScreen'; // Import the GlobalChatScreen component
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -24,17 +26,17 @@ export default function ChatListScreen({ navigation }) {
         <Tab.Screen
           name="Chat"
           component={ChatScreen}
-          options={{ tabBarLabel: 'Chat' }}
+          options={{ tabBarLabel: 'Search' }}
+        />
+       <Tab.Screen
+          name="Direct Chat"
+          component={DirectChatScreen}
+          options={{ tabBarLabel: 'Direct Chat' }}
         />
         <Tab.Screen
-          name="Notifications"
-          component={NotificationsScreen}
-          options={{ tabBarLabel: 'Notifications' }}
-        />
-        <Tab.Screen
-          name="Contacts"
-          component={ContactsScreen}
-          options={{ tabBarLabel: 'Contacts' }}
+          name="Global Chat"
+          component={GlobalChatScreen}
+          options={{ tabBarLabel: 'Global Chat' }}
         />
       </Tab.Navigator>
     </>
@@ -105,20 +107,6 @@ function ChatScreen({ navigation }) {
               </View>
             </Card>
           ))}
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate("DirectChat")} style={styles.iconButton}>
-            <View style={styles.iconContainer}>
-              <MaterialCommunityIcons name="message" size={50} color="black" />
-              <Text style={styles.iconText}>Direct Chat</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("GlobalChat")} style={styles.iconButton}>
-            <View style={styles.iconContainer}>
-              <MaterialCommunityIcons name="earth" size={50} color="black" />
-              <Text style={styles.iconText}>Global Chat</Text>
-            </View>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
