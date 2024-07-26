@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, ScrollView, Dimensions, Image, Pressable, Keyboard, TouchableWithoutFeedback, TextInput, FlatList } from "react-native";
-import { AntDesign, Entypo } from "@expo/vector-icons";
-import { Searchbar, Avatar, Button, Card, Chip, IconButton, Paragraph, Text as RNPText, Appbar, useTheme, ActivityIndicator, Text } from 'react-native-paper';
-import { TouchableRipple, Switch } from 'react-native-paper';
-import { PreferencesContext } from '../Components/preferencesContext';
-import { fetchPublicCatalogs, fetchPublicItems } from "../firebaseConfig"; // Ensure these are imported correctly
+import { View, StyleSheet, ScrollView, Dimensions, Keyboard, TouchableWithoutFeedback, Text } from "react-native";
+import { Searchbar, Card, Appbar, useTheme, ActivityIndicator, Text as RNPText } from 'react-native-paper';
+import { fetchPublicCatalogs } from "../firebaseConfig"; // Ensure these are imported correctly
 
 const windowWidth = Dimensions.get("window").width;
 
@@ -38,64 +35,66 @@ export default function SearchCatalogsScreen({ navigation, route }) {
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title="Caboodle"/>
+        <Appbar.Content title="Caboodle" />
         <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
       </Appbar.Header>
-      <View style={{ flex: 1 }}>
-        <Searchbar
-          placeholder="Search Public Catalogs"
-          value={searchQuery}
-          onSubmitEditing={handleSearch}
-          onChangeText={handleSearch}
-        />
-        {loading ? (
-          <Text>Searching...</Text>
-        ) : (
-          <ScrollView style={styles.catalogsContainer}>
-            <View style={styles.row}>
-              {catalogs.map((catalog) => (
-                <Card
-                  key={catalog.id}
-                  style={styles.card}
-                  mode="elevated"
-                  onPress={() => handleCatalogSelect(catalog)}
-                >
-                  <Card.Cover
-                    source={{
-                      uri:
-                        catalog.images && catalog.images.length > 0
-                          ? catalog.images[0]
-                          : "https://via.placeholder.com/150",
-                    }}
-                  />
-                  <Card.Title
-                    title={catalog.catalogName}
-                    subtitle={`by ${catalog.userName}`}
-                    titleStyle={{
-                      fontFamily: "System",
-                      fontSize: 18,
-                      fontWeight: "bold",
-                    }}
-                    subtitleStyle={{
-                      fontFamily: "System",
-                      fontSize: 14,
-                      fontStyle: "italic",
-                    }}
-                  />
-                  <Card.Content>
-                    <RNPText variant="labelMedium">
-                      Category: {catalog.category}
-                    </RNPText>
-                    <RNPText variant="labelMedium">
-                      {catalog.description}
-                    </RNPText>
-                  </Card.Content>
-                </Card>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-      </View>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <View style={{ flex: 1 }}>
+          <Searchbar
+            placeholder="Search Public Catalogs"
+            value={searchQuery}
+            onSubmitEditing={() => handleSearch(searchQuery)}
+            onChangeText={text => setSearchQuery(text)}
+          />
+          {loading ? (
+            <ActivityIndicator animating={true} />
+          ) : (
+            <ScrollView style={styles.catalogsContainer}>
+              <View style={styles.row}>
+                {catalogs.map((catalog) => (
+                  <Card
+                    key={catalog.publicCatalogId}
+                    style={styles.card}
+                    mode="elevated"
+                    onPress={() => handleCatalogSelect(catalog)}
+                  >
+                    <Card.Cover
+                      source={{
+                        uri:
+                          catalog.catalogImages && catalog.catalogImages.length > 0
+                            ? catalog.catalogImages[0]
+                            : "https://via.placeholder.com/150",
+                      }}
+                    />
+                    <Card.Title
+                      title={catalog.catalogName}
+                      subtitle={`by ${catalog.userName}`}
+                      titleStyle={{
+                        fontFamily: "System",
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                      subtitleStyle={{
+                        fontFamily: "System",
+                        fontSize: 14,
+                        fontStyle: "italic",
+                      }}
+                    />
+                    <Card.Content>
+                      <RNPText variant="labelMedium">
+                        Category: {catalog.catalogCategory}
+                      </RNPText>
+                      <RNPText variant="labelMedium">
+                        {catalog.catalogDescription}
+                      </RNPText>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
     </>
   );
 }
@@ -142,10 +141,15 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 15, // Okay...for now
   },
-    row: {
+  row: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: 5,
+  },
+  card: {
+    width: "48%", // Adjust this value to set more landscape, less portrait styled-cards
+    marginVertical: 5,
+    borderRadius: 15, // Okay...for now
   },
 });

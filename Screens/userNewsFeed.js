@@ -1,32 +1,6 @@
-// "But it should never fail" -- every programmer be like after making a small change
-
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Image,
-  Pressable,
-  Keyboard,
-  TouchableWithoutFeedback,
-} from "react-native";
-import { AntDesign, Entypo } from "@expo/vector-icons";
-import Header from "../Components/header";
-import {
-  Searchbar,
-  Avatar,
-  Button,
-  Card,
-  Chip,
-  IconButton,
-  Paragraph,
-  Text as RNPText,
-  Appbar,
-} from "react-native-paper";
+import { View, TouchableWithoutFeedback, StyleSheet, ScrollView, Dimensions, Keyboard } from "react-native";
+import { Appbar, Card, Text as RNPText } from "react-native-paper";
 import { auth, fetchPublicCatalogs } from "../firebaseConfig";
 
 const windowWidth = Dimensions.get("window").width;
@@ -75,16 +49,13 @@ export default function UserNewsFeed({ navigation, route }) {
       <>
         <Appbar.Header>
           <Appbar.Content title="Your Feed" />
-          <Appbar.Action
-            icon="account-outline"
-            onPress={() => navigation.navigate("Profile")}
-          />
+          <Appbar.Action icon="account-outline" onPress={() => navigation.navigate("Profile")} />
         </Appbar.Header>
         <ScrollView style={styles.catalogsContainer}>
           <View style={styles.row}>
             {catalogs.map((catalog) => (
               <Card
-                key={catalog.id}
+                key={catalog.publicCatalogId}
                 style={styles.card}
                 mode="elevated"
                 onPress={() => handleCatalogSelection(catalog)}
@@ -92,10 +63,9 @@ export default function UserNewsFeed({ navigation, route }) {
                 {/* TODO: Catalog cover images are not displaying. Tyler and Desmond to work on.*/}
                 <Card.Cover
                   source={{
-                    uri:
-                      catalog.images && catalog.images.length > 0
-                        ? catalog.images[0]
-                        : "https://via.placeholder.com/150",
+                    uri: catalog.catalogImages && catalog.catalogImages.length > 0
+                      ? catalog.catalogImages[0]
+                      : "https://via.placeholder.com/150",
                   }}
                 />
                 <Card.Title
@@ -105,22 +75,19 @@ export default function UserNewsFeed({ navigation, route }) {
                     fontFamily: "System",
                     fontSize: 18,
                     fontWeight: "bold",
-
                   }}
                   subtitleStyle={{
                     fontFamily: "System",
                     fontSize: 14,
                     fontStyle: "italic",
-
                   }}
                 />
                 <Card.Content>
                   <RNPText variant="labelMedium">
-                    {/* For the user's Feed, a description will be shown*/}
-                    Category: {catalog.category}
+                    Category: {catalog.catalogCategory} {/* Ensure this accesses the correct field */}
                   </RNPText>
                   <RNPText variant="labelMedium">
-                    {catalog.description}
+                    {catalog.catalogDescription}
                   </RNPText>
                 </Card.Content>
               </Card>
@@ -166,7 +133,6 @@ const styles = StyleSheet.create({
   catalogsContainer: {
     width: "100%",
     length: "50%",
-
   },
   row: {
     flexDirection: "row",
