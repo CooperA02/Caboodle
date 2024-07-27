@@ -199,20 +199,80 @@ const fetchCatalogs = async (userId) => {
   }
 };
 
-const deleteCatalogs = async (userId, catalogId) => {
+const deleteCatalogs = async (userId, catalogId, publicCatalogId) => {
   try {
+    // Delete private catalog
     const q = query(collection(firestore, "users", userId, "catalogs"));
     const querySnapshot = await getDocs(q);
+    let docRefToDelete; // Reference to the document to delete
     querySnapshot.forEach((doc) => {
       if (doc.data().id === catalogId) {
-        deleteDoc(doc.ref);
+        docRefToDelete = doc.ref; // Store reference to the document to delete
       }
     });
+    if (docRefToDelete) {
+      await deleteDoc(docRefToDelete);
+      console.log("Private Catalog successfully deleted:", catalogId);
+    } else {
+      console.log("Catalog not found:", catalogId);
+    }
+
+    // Delete public catalog if publicCatalogId is provided
+    if (publicCatalogId) {
+      const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
+      await deleteDoc(publicCatRef);
+      console.log("Public Catalog successfully deleted:", publicCatalogId);
+    } else {
+      console.log("No public catalog ID provided, skipping public catalog deletion.");
+    }
   } catch (error) {
     console.error("Error deleting catalog data:", error.message);
     throw error;
   }
 };
+
+const updateCatalogImage = async (userId, catalogId, publicCatalogId, imageUri) => {
+  if (!imageUri || !userId || !catalogId) {
+    throw new Error('Image URI, User ID, and Catalog ID are required.');
+  }
+
+  console.log("Download URL:", imageUri);
+
+  const filename = `catalog_images/${userId}/${catalogId}/${new Date().toISOString()}.jpg`;
+
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, filename);
+
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    await uploadBytes(storageRef, blob);
+
+    const downloadURL = await getDownloadURL(storageRef);
+
+    // Update private catalog image
+    const privateCatRef = doc(firestore, "users", userId, "catalogs", catalogId);
+    await updateDoc(privateCatRef, { images: [filename] }); // Replace the entire array with the new image URL
+
+    console.log("Private Catalog image successfully updated:", catalogId);
+
+    // Optionally update public catalog image if publicCatalogId is provided
+    if (publicCatalogId) {
+      const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
+      await updateDoc(publicCatRef, { images: [downloadURL] }); // Update image in public catalog
+      console.log("Public Catalog image successfully updated:", publicCatalogId);
+    } else {
+      console.log("No public catalog ID provided, skipping public catalog update.");
+    }
+
+    return { url: downloadURL };
+  } catch (error) {
+    console.error('Error updating catalog image:', error.message);
+    throw new Error('Failed to update catalog image.');
+  }
+};
+
 
 // Create Item
 const createItem = async (userId, catalogId, item, images) => {
@@ -1077,4 +1137,5 @@ export {
   searchUsers, 
   fetchGlobalChat,
   addGlobalMessage,
+  updateCatalogImage,
 };

@@ -90,7 +90,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
       <ScrollView style={styles.itemsContainer}>
         <List.Section title={selectedCatalog.name}>
         <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+          <TouchableOpacity style={styles.addButton} Title= "Create New Item"onPress={handleAddItem}>
             <AntDesign name="pluscircleo" size={24} color="black"/>
           </TouchableOpacity>
         </View>
