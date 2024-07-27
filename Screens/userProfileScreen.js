@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { StyleSheet, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
 import { auth, fetchUserData, handleSaveProfile, uploadProfilePicture } from '../firebaseConfig'; // Import handleSaveProfile function
 import { useTheme, Appbar, TouchableRipple, Switch, TextInput, Text} from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
