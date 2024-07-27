@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Dimensions, Keyboard, TouchableWithoutFeedback, Text } from "react-native";
-import { Searchbar, Card, Appbar, useTheme, ActivityIndicator, Text as RNPText } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, Dimensions, Keyboard, TouchableWithoutFeedback, Text, TouchableOpacity, Image } from "react-native";
+import { Searchbar, Card, Appbar, useTheme, ActivityIndicator, Text as RNPText, Menu, MenuItem, Button, PaperProvider } from 'react-native-paper';
 import { fetchPublicCatalogs } from "../firebaseConfig"; // Ensure these are imported correctly
 
 const windowWidth = Dimensions.get("window").width;
@@ -9,6 +9,27 @@ export default function SearchCatalogsScreen({ navigation, route }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [catalogs, setCatalogs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const openMenu = () => setVisible(true);
+  const [visible, setVisible] = React.useState(false);
+  const closeMenu = () => setVisible(false);
+
+  
+  useEffect(() => {
+    fetchAllCatalogs(); // Fetch all catalogs when the component mounts
+  }, []);
+
+  const fetchAllCatalogs = async () => {
+    setLoading(true);
+    try {
+      const publicCatalogs = await fetchPublicCatalogs();
+      setCatalogs(publicCatalogs); // Set all catalogs fetched initially
+    } catch (error) {
+      console.error('Error fetching catalogs:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (text) => {
     setSearchQuery(text);
@@ -32,13 +53,60 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     });
   };
 
+  const handleSortByViews = () => {
+    const sortedCatalogs = [...catalogs].sort((a, b) => b.views - a.views);
+    setCatalogs(sortedCatalogs);
+    setIsMenuVisible(false);
+  };
+
+  const handleSortAlphabetically = () => {
+    const sortedCatalogs = [...catalogs].sort((a, b) =>
+      a.catalogName.localeCompare(b.catalogName)
+    );
+    setCatalogs(sortedCatalogs);
+    setIsMenuVisible(false);
+  };
+
+  const handleSortByCreationDate = () => {
+    const sortedCatalogs = [...catalogs].sort((a, b) => {
+      const dateA = new Date(a.createdAt.toDate());
+      const dateB = new Date(b.createdAt.toDate());
+      return dateB - dateA; // Descending order
+    });
+    setCatalogs(sortedCatalogs);
+    setIsMenuVisible(false);
+  };
+  
+  const handleSortByModificationDate = () => {
+    const sortedCatalogs = [...catalogs].sort((a, b) => {
+      const dateA = new Date(a.updatedAt.toDate());
+      const dateB = new Date(b.updatedAt.toDate());
+      return dateB - dateA; // Descending order
+    });
+    setCatalogs(sortedCatalogs);
+    setIsMenuVisible(false);
+  };
+  
+
   return (
     <>
-      <Appbar.Header>
-        <Appbar.Content title="Caboodle" />
-        <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
-      </Appbar.Header>
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <PaperProvider>
+        <Appbar.Header>
+          <Menu
+            visible={visible}
+            onDismiss={closeMenu}
+            anchor={<Button icon="sort" onPress={openMenu} />}
+          >
+            <Menu.Item onPress={handleSortByViews} title="Popularity" />
+            <Menu.Item onPress={handleSortAlphabetically} title="Name (A-Z)" />
+            <Menu.Item onPress={handleSortByCreationDate} title="Newest" />
+            <Menu.Item onPress={handleSortByModificationDate} title="Recently Modified" />
+          </Menu>
+          <Appbar.Content title="Caboodle" />
+          <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
+        </Appbar.Header>
+
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={{ flex: 1 }}>
           <Searchbar
             placeholder="Search Public Catalogs"
@@ -88,16 +156,18 @@ export default function SearchCatalogsScreen({ navigation, route }) {
                         Description: {catalog.catalogDescription}
                       </RNPText>
                     </Card.Content>
-                  </Card>
+                    </Card>
                 ))}
               </View>
             </ScrollView>
           )}
         </View>
       </TouchableWithoutFeedback>
+      </PaperProvider>
     </>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -127,9 +197,9 @@ const styles = StyleSheet.create({
 
   },
   gridItem: {
-    width: "32%", // Adjusted for 3 items per row
-    marginVertical: 2, //
-    marginHorizontal: 2, 
+    height: Dimensions.get('window').width / 2,
+    width: '50%',
+    padding: 4,
   },
   image: {
     width: "100%", // 
@@ -146,10 +216,5 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: 5,
-  },
-  card: {
-    width: "48%", // Adjust this value to set more landscape, less portrait styled-cards
-    marginVertical: 5,
-    borderRadius: 15, // Okay...for now
   },
 });
