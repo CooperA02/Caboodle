@@ -1,22 +1,23 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
-  Text,
-  TextInput,
   Button,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from "react-native";
-import { Avatar } from "react-native-paper";
+import { Avatar, Text, TextInput } from "react-native-paper";
 import { auth, fetchMessages, addMessage } from "../firebaseConfig";
+import { PreferencesContext } from '../Components/preferencesContext';
 
 export default function UserChatScreen({ route }) {
   const { chatId, username } = route.params;
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const scrollViewRef = useRef(null);
+  const { isThemeDark } = useContext(PreferencesContext);
 
   useEffect(() => {
     const fetchChatMessages = async () => {
@@ -41,6 +42,7 @@ export default function UserChatScreen({ route }) {
       try {
         await addMessage(chatId, messageText);
         setMessageText("");
+        Keyboard.dismiss();
         const chatMessages = await fetchMessages(chatId);
         const sortedMessages = chatMessages.sort((a, b) => a.timestamp.seconds - b.timestamp.seconds);
         setMessages(sortedMessages);
@@ -50,11 +52,13 @@ export default function UserChatScreen({ route }) {
     }
   };
 
+  const currentUserMessageBackground = isThemeDark ? 'green' : '#e1ffc7';
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+    style={styles.container}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <ScrollView
         ref={scrollViewRef}
@@ -64,12 +68,15 @@ export default function UserChatScreen({ route }) {
         <View>
           {messages.map((item) => {
             const isCurrentUser = auth.currentUser?.uid === item.userId;
+            const currentUserMessageBackground = isThemeDark ? 'green' : '#e1ffc7'; 
+            const otherUserMessageBackgroundColor = isThemeDark ? 'black' : '#f1f1f1';
             return (
               <View
                 key={item.id}
                 style={[
                   styles.messageContainer,
                   isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+                  
                 ]}
               >
                 {!isCurrentUser && <Avatar.Image size={40} source={{ uri: item.profilePictureUrl }} />}
@@ -77,11 +84,13 @@ export default function UserChatScreen({ route }) {
                   style={[
                     styles.messageContent,
                     isCurrentUser ? styles.currentUserMessageContent : styles.otherUserMessageContent,
+                    isCurrentUser ? { ...styles.currentUserMessageContent, backgroundColor: currentUserMessageBackground } : styles.otherUserMessageContent,
+                    !isCurrentUser && { backgroundColor: otherUserMessageBackgroundColor },
                   ]}
                 >
-                  <Text style={styles.messageSender}>{item.sender}</Text>
-                  <Text style={styles.messageText}>{item.text}</Text>
-                  <Text style={styles.messageTime}>{new Date(item.timestamp.seconds * 1000).toLocaleString()}</Text>
+                  <Text style={[styles.messageSender, , isThemeDark ? styles.darkModeTextColor : styles.lightModeTextColor]}>{item.sender}</Text>
+                  <Text style={[styles.messageText, isThemeDark ? styles.darkModeTextColor : styles.lightModeTextColor]}>{item.text}</Text>
+                  <Text style={[styles.messageTime, isThemeDark ? styles.darkModeTextColor : styles.lightModeTextColor]}>{new Date(item.timestamp.seconds * 1000).toLocaleString()}</Text>
                 </View>
                 {isCurrentUser && <Avatar.Image size={40} source={{ uri: item.profilePictureUrl }} />}
               </View>
@@ -95,6 +104,7 @@ export default function UserChatScreen({ route }) {
           placeholder="Type a message..."
           value={messageText}
           onChangeText={setMessageText}
+          onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         />
         <Button title="Send" onPress={handleSend} />
       </View>
@@ -137,7 +147,7 @@ const styles = StyleSheet.create({
   },
   currentUserMessageContent: {
     alignItems: "flex-end",
-    backgroundColor: "#e1ffc7",
+    backgroundColor: "lightgreen",
     borderRadius: 10,
     padding: 10,
   },
@@ -157,14 +167,18 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderColor: "#ccc",
-    backgroundColor: "#fff",
+    marginBottom: 35,
   },
   textInput: {
     flex: 1,
     borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
     marginRight: 10,
+  },
+  darkModeTextColor: {
+    color: 'white',
+  },
+  lightModeTextColor: {
+    color: 'black',
   },
 });

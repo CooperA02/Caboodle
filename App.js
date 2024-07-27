@@ -235,7 +235,7 @@ export default function App() {
                     <Stack.Screen
             name="UserChatScreen"
             component={UserChatsScreen}
-            options={{ headerShown: true }} // Hide header
+            options={{ headerTitle: '' }} // Hide header
           />
           <Stack.Screen
             name="GlobalChat"

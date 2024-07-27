@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { Avatar } from "react-native-paper";
+import { Avatar, Text, Card  } from "react-native-paper";
 import {
   auth,
   firestore,
@@ -99,23 +98,27 @@ export default function DirectChatsScreen({ navigation }) {
     };      
 
     return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => handlePress(item.id, otherUserName)}
-      >
+      <Card
+      style={styles.card}
+        mode="contained"
+        onPress={() => handlePress(item.id, otherUserName)}>
+
         <View style={styles.cardContent}>
           <Avatar.Image
             size={40}
             source={{ uri: profilePictureUrl }}
           />
+          
           <View style={styles.cardText}>
             <Text style={styles.cardTitle}>{otherUserName || 'Unknown'}</Text>
             <Text style={styles.cardSubtitle}>
               {lastMessage.text} {lastMessage.timestamp ? `- Last message: ${formatTimestamp(lastMessage.timestamp)}` : ''}
             </Text>
           </View>
+
         </View>
-      </TouchableOpacity>
+
+      </Card>
     );
   };
 
@@ -134,14 +137,13 @@ export default function DirectChatsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 12,
   },
   card: {
-    backgroundColor: "#fff",
     padding: 15,
     borderRadius: 10,
     elevation: 3,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   cardContent: {
     flexDirection: "row",
