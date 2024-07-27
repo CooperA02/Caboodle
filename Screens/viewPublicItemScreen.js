@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  Image,
-  Modal,
-  Dimensions,
-} from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
 import { auth, fetchPublicAttributes } from "../firebaseConfig";
 import {
   Searchbar,
@@ -30,6 +20,7 @@ export default function ViewItemScreen({ navigation, route }) {
   const [attributes, setAttributes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [designatedImage, setDesignatedImage] = useState(selectedItem.itemImages ? selectedItem.itemImages[0] : null);
 
   useEffect(() => {
     const getItemData = async () => {
@@ -39,11 +30,17 @@ export default function ViewItemScreen({ navigation, route }) {
           console.log(`Fetching item details for user: ${user.uid}`);
           console.log(`Selected catalog: ${selectedCatalog.publicCatalogId}`);
           console.log(`Selected item: ${selectedItem.publicItemId}`);
+
+          // Fetch attributes
           const attributeData = await fetchPublicAttributes(
             selectedCatalog.publicCatalogId,
             selectedItem.publicItemId
           );
-          setAttributes(attributeData);
+          console.log('Fetched attributes:', attributeData);
+          setAttributes(attributeData || []);
+          
+          // Log selected item details
+          console.log('Selected item details:', selectedItem);
         } else {
           console.log("User is not authenticated");
         }
@@ -62,10 +59,9 @@ export default function ViewItemScreen({ navigation, route }) {
     });
 
     return () => {
-      isMounted = false;
       unsubscribe();
     };
-  }, [navigation, selectedCatalog.id, selectedItem.id]);
+  }, [navigation, selectedCatalog.publicCatalogId, selectedItem.publicItemId]);
 
   if (loading) {
     return (
@@ -85,88 +81,92 @@ export default function ViewItemScreen({ navigation, route }) {
 
   return (
     <>
-      <RNPText variant="headlineSmall" style={styles.catalogName}>
-        {selectedCatalog.name}
-      </RNPText>
-      <RNPText variant="displaySmall" style={styles.itemName}>
-        {selectedItem.name}
-      </RNPText>
-      <ScrollView style={styles.attributesContainer}>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeName}>Value</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-            {selectedItem.value}
-          </Text>
+      <Appbar.Header>
+        <Appbar.Content title={selectedCatalog.name} />
+      </Appbar.Header>
+      <ScrollView style={styles.scrollView}>
+        <Text variant="displaySmall" style={styles.itemName}>
+          {selectedItem.itemName}
+        </Text>
+        {designatedImage && (
+          <Image source={{ uri: designatedImage }} style={styles.designatedImage} />
+        )}
+        <View style={styles.imagesContainer}>
+          {selectedItem.itemImages && selectedItem.itemImages.length > 0 ? (
+            selectedItem.itemImages.map((image, index) => (
+              <TouchableOpacity key={index} onPress={() => setDesignatedImage(image)}>
+                <Image
+                  source={{ uri: image }}
+                  style={styles.itemImage}
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text>No images available.</Text>
+          )}
         </View>
-        <View style={styles.attributeRow}>
-          <Text style={styles.attributeName}>Description</Text>
-          <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-            {selectedItem.description}
-          </Text>
+        <View style={styles.attributesContainer}>
+          {attributes && attributes.length > 0 ? (
+            attributes.map((attr) => (
+              <View key={attr.id} style={styles.attributeRow}>
+                <Text style={styles.attributeName}>{attr.attributeName}</Text>
+                <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
+              </View>
+            ))
+          ) : (
+            <Text>No attributes available.</Text>
+          )}
         </View>
-        {attributes.map((attr) => (
-          <View key={attr.id} style={styles.attributeRow}>
-            <Text style={styles.attributeName}>{attr.attributeName}</Text>
-            <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
-          </View>
-        ))}
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   container: {
     flex: 1,
-    padding: 20,
-    marginTop: 40,
-  },
-  catalogName: {
-    fontSize: 20,
-  },
-  goBackButton: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
-  },
-  goBackButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#007bff",
-  },
-  titleContainer: {
-    alignItems: "center",
-    marginBottom: 10,
   },
   itemName: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginVertical: 10,
     textAlign: "center",
   },
   designatedImage: {
-    width: "100%",
-    height: 250,
+    width: '100%',
+    height: 300,
     borderRadius: 5,
+    marginBottom: 10,
+  },
+  imagesContainer: {
+    flexDirection: "row",
     marginBottom: 20,
     alignSelf: "center",
   },
-  topAttributesContainer: {
-    marginBottom: 20,
-    textAlign: "center",
+  itemImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 5,
+    marginRight: 10,
   },
   attributesContainer: {
-    marginBottom: 5,
+    marginBottom: 20,
   },
   attributeRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
   attributeName: {
     fontSize: 18,
+    fontWeight: "bold",
   },
   attributeValue: {
     fontSize: 18,

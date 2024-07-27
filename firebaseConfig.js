@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword as createUser,
   signInWithEmailAndPassword as signIn,
   initializeAuth,
+  browserLocalPersistence,
   getReactNativePersistence,
 } from "firebase/auth";
 import {
@@ -22,6 +23,7 @@ import {
   serverTimestamp,
   limit,
 } from "firebase/firestore";
+import { Platform } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getStorage,
@@ -44,10 +46,19 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Auth with AsyncStorage for persistence
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Initialize Firebase Auth with browserLocalPersistence
+let auth;
+
+if (Platform.OS === 'web') {
+  // Web environment
+  auth = getAuth(app);
+  auth.setPersistence(browserLocalPersistence);
+} else {
+  // React Native environment
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
 
 // Initialize Firebase Storage
 const storage = getStorage(app);
@@ -498,24 +509,14 @@ const addToPublicCatalogList = async (userId, name, catalog, catalogId) => {
       catalogName: catalog.name,
       catalogCategory: catalog.category,
       catalogDescription: catalog.description,
-      catalogImages: catalog.images,
+      catalogImages: catalog.images, 
     });
 
-    const pubCatalogDocRef = doc(
-      collection(firestore, "publicCatalogs"),
-      docRef.id
-    );
-    await setDoc(
-      pubCatalogDocRef,
-      { publicCatalogId: docRef.id },
-      { merge: true }
-    );
+    const pubCatalogDocRef = doc(collection(firestore, "publicCatalogs"), docRef.id);
+    await setDoc(pubCatalogDocRef, { publicCatalogId: docRef.id }, { merge: true });
     console.log("Catalog successfully added to public list:", docRef.id);
 
-    const catalogDocRef = doc(
-      collection(firestore, "users", userId, "catalogs"),
-      catalogId
-    );
+    const catalogDocRef = doc(collection(firestore, "users", userId, "catalogs"), catalogId);
     await setDoc(catalogDocRef, { publicId: docRef.id }, { merge: true });
 
     return docRef.id;
@@ -555,14 +556,12 @@ const deletePublicCatalogs = async (userId, catalogId) => {
   }
 };
 
-const addToPublicItemList = async (
-  UserId,
-  catalogId,
-  pubCatalogId,
-  itemId,
-  item
-) => {
+const addToPublicItemList = async (userId, catalogId, pubCatalogId, itemId, item) => {
   try {
+    const itemDoc = await getDoc(doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId));
+    const itemData = itemDoc.data();
+    const imageUrls = itemData.images || [];
+
     const docRef = await addDoc(
       collection(firestore, "publicCatalogs", pubCatalogId, "publicItems"),
       {
@@ -571,21 +570,21 @@ const addToPublicItemList = async (
         itemName: item.name,
         itemValue: item.value,
         itemDescription: item.description,
+        itemImages: imageUrls,
+        attributes: [ 
+          { attributeName: "Value", attributeValue: item.value },
+          { attributeName: "Description", attributeValue: item.description }
+        ]
       }
     );
 
-    const itemDocRef = doc(
-      collection(firestore, "publicCatalogs", pubCatalogId, "publicItems"),
-      docRef.id
-    );
+    const itemDocRef = doc(firestore, "publicCatalogs", pubCatalogId, "publicItems", docRef.id);
     await setDoc(itemDocRef, { publicItemId: docRef.id }, { merge: true });
-    console.log("Item successfully added to public list:", docRef.id);
 
-    const itemRef = doc(
-      collection(firestore, "users", UserId, "catalogs", catalogId, "items"),
-      itemId
-    );
-    await setDoc(itemRef, { publicId: docRef.id }, { merge: true });
+    const userItemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    await setDoc(userItemRef, { publicId: docRef.id }, { merge: true });
+
+    console.log("Item successfully added to public list:", docRef.id);
     return docRef.id;
   } catch (error) {
     console.error("Error adding item to public list:", error.message);
@@ -601,7 +600,8 @@ const fetchPublicItems = async (catalogId) => {
     const querySnapshot = await getDocs(q);
     const publicItems = [];
     querySnapshot.forEach((doc) => {
-      publicItems.push(doc.data());
+      const itemData = doc.data();
+      publicItems.push({ ...itemData, id: doc.id }); 
     });
     console.log("Public Items fetched successfully.");
     return publicItems;
@@ -688,6 +688,7 @@ const addToPublicAttributeList = async (
       attributeId
     );
     await setDoc(attributeRef, { publicId: docRef.id }, { merge: true });
+
     return docRef.id;
   } catch (error) {
     console.error("Error adding item to public list:", error.message);
@@ -697,23 +698,30 @@ const addToPublicAttributeList = async (
 
 const fetchPublicAttributes = async (pubCatalogId, pubItemId) => {
   try {
-    const q = query(
-      collection(
-        firestore,
-        "publicCatalogs",
-        pubCatalogId,
-        "publicItems",
-        pubItemId,
-        "publicAttributes"
-      )
-    );
+    const itemDocRef = doc(firestore, "publicCatalogs", pubCatalogId, "publicItems", pubItemId);
+    const itemDoc = await getDoc(itemDocRef);
+
+    if (!itemDoc.exists()) {
+      console.log("No public attributes found for the item.");
+      return [];
+    }
+
+    const itemData = itemDoc.data();
+    const defaultAttributes = [
+      { attributeName: 'Value', attributeValue: itemData.itemValue },
+      { attributeName: 'Description', attributeValue: itemData.itemDescription },
+    ];
+
+    const q = query(collection(firestore, "publicCatalogs", pubCatalogId, "publicItems", pubItemId, "publicAttributes"));
     const querySnapshot = await getDocs(q);
-    const publicAttributes = [];
+
+    const additionalAttributes = [];
     querySnapshot.forEach((doc) => {
-      publicAttributes.push(doc.data());
+      additionalAttributes.push({ id: doc.id, ...doc.data() });
     });
+
     console.log("Public Attributes fetched successfully.");
-    return publicAttributes;
+    return [...defaultAttributes, ...additionalAttributes];
   } catch (error) {
     console.error("Error fetching public attribute data:", error.message);
     throw error;

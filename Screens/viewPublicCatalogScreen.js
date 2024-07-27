@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Alert,
-} from "react-native";
-import { AntDesign } from "@expo/vector-icons";
+import { View, TouchableOpacity, StyleSheet, ScrollView, Image } from "react-native";
 import { auth, fetchPublicItems } from "../firebaseConfig";
 import { Appbar, Button, Divider, List, Text } from "react-native-paper";
 
@@ -21,28 +13,22 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
         const user = auth.currentUser;
         if (user && route.params && route.params.selectedCatalog) {
           setSelectedCatalog(route.params.selectedCatalog);
-          const itemData = await fetchPublicItems(
-            route.params.selectedCatalog.publicCatalogId
-          );
+          const itemData = await fetchPublicItems(route.params.selectedCatalog.publicCatalogId);
+          console.log('Fetched public items:', itemData); // Log the fetched items to verify itemImages
           setItems(itemData);
         } else {
-          console.log(
-            "User is not authenticated or selectedCatalog is missing"
-          );
+          console.log("User is not authenticated or selectedCatalog is missing");
         }
       } catch (error) {
         console.error("Error fetching Item:", error.message);
       }
     };
-
+  
     getItemData();
-
-    return () => {};
   }, [route.params?.selectedCatalog]);
 
-  // Check if selectedCatalog is null or undefined
   if (!selectedCatalog) {
-    return null; // or return loading indicator or some fallback UI
+    return null;
   }
 
   const handleNavigateToViewItemScreen = (itemId) => {
@@ -58,29 +44,19 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
       <Appbar.Header>
         <Appbar.Content title={selectedCatalog.name} />
       </Appbar.Header>
-      <Text style={styles.catalogName}>
-        Created By: {selectedCatalog.userName}
-      </Text>
-      <Text style={styles.catalogName}>
-        Description: {selectedCatalog.catalogDescription}
-      </Text>
       <ScrollView style={styles.itemsContainer}>
         <List.Section>
-          <View style={styles.itemDetails}>
-            <Text style={styles.itemName}>Item</Text>
-            <Text style={styles.itemName}>Value</Text>
-            <Text style={styles.itemName}>Description</Text>
-          </View>
           {items.map((item) => (
             <TouchableOpacity
-              key={item.id}
+              key={item.publicItemId}
               onPress={() => handleNavigateToViewItemScreen(item.publicItemId)}
               style={styles.itemRow}
             >
+              {item.itemImages && item.itemImages.length > 0 && (
+                <Image source={{ uri: item.itemImages[0] }} style={styles.itemImage} />
+              )}
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.itemName}</Text>
-                <Text style={styles.itemName}>{item.itemValue}</Text>
-                <Text style={styles.itemName}>{item.itemDescription}</Text>
               </View>
             </TouchableOpacity>
           ))}
