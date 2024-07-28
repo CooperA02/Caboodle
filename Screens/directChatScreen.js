@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
-import { Avatar, Text, Card  } from "react-native-paper";
+import { View, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { Avatar, Text, Card } from "react-native-paper";
 import {
   auth,
   firestore,
@@ -29,12 +24,12 @@ export default function DirectChatsScreen({ navigation }) {
           setChats(userChats);
 
           // Fetch user details for each chat
-          const userIds = userChats.map(chat =>
+          const userIds = userChats.map((chat) =>
             chat.user1Id === currentUser.uid ? chat.user2Id : chat.user1Id
           );
-          const uniqueUserIds = [...new Set(userIds)]; 
+          const uniqueUserIds = [...new Set(userIds)];
 
-          const userPromises = uniqueUserIds.map(async userId => {
+          const userPromises = uniqueUserIds.map(async (userId) => {
             const userDocRef = doc(firestore, "users", userId);
             const userDoc = await getDoc(userDocRef);
             return { userId, data: userDoc.exists() ? userDoc.data() : {} };
@@ -49,16 +44,19 @@ export default function DirectChatsScreen({ navigation }) {
           setUsers(usersMap);
 
           // Fetch last message for each chat
-          const lastMessagePromises = userChats.map(async chat => {
+          const lastMessagePromises = userChats.map(async (chat) => {
             const lastMessage = await fetchLastMessage(chat.id);
             return { chatId: chat.id, ...lastMessage };
           });
 
           const lastMessagesData = await Promise.all(lastMessagePromises);
-          const lastMessagesMap = lastMessagesData.reduce((acc, { chatId, text, timestamp }) => {
-            acc[chatId] = { text, timestamp };
-            return acc;
-          }, {});
+          const lastMessagesMap = lastMessagesData.reduce(
+            (acc, { chatId, text, timestamp }) => {
+              acc[chatId] = { text, timestamp };
+              return acc;
+            },
+            {}
+          );
 
           setLastMessages(lastMessagesMap);
         }
@@ -75,49 +73,53 @@ export default function DirectChatsScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
-    const otherUserId = item.user1Id === currentUser.uid ? item.user2Id : item.user1Id;
+    const otherUserId =
+      item.user1Id === currentUser.uid ? item.user2Id : item.user1Id;
     const otherUser = users[otherUserId] || {};
-    const otherUserName = item.user1Id === currentUser.uid ? item.name2 : item.name1;
-    const profilePictureUrl = otherUser.profilePictureUrl || 'https://via.placeholder.com/40'; 
-    const lastMessage = lastMessages[item.id] || { text: "No messages yet", timestamp: null };
+    const otherUserName =
+      item.user1Id === currentUser.uid ? item.name2 : item.name1;
+    const profilePictureUrl =
+      otherUser.profilePictureUrl || "https://via.placeholder.com/40";
+    const lastMessage = lastMessages[item.id] || {
+      text: "No messages yet",
+      timestamp: null,
+    };
 
     const formatTimestamp = (timestamp) => {
-      if (!timestamp) return '';
-      
+      if (!timestamp) return "";
+
       const date = new Date(timestamp);
       let hours = date.getHours();
       const minutes = date.getMinutes();
-      
-      const period = hours >= 12 ? 'PM' : 'AM';
+
+      const period = hours >= 12 ? "PM" : "AM";
       hours = hours % 12;
       hours = hours || 12;
 
       const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-      
+
       return `${hours}:${formattedMinutes} ${period}`;
-    };      
+    };
 
     return (
       <Card
-      style={styles.card}
+        style={styles.card}
         mode="contained"
-        onPress={() => handlePress(item.id, otherUserName)}>
-
+        onPress={() => handlePress(item.id, otherUserName)}
+      >
         <View style={styles.cardContent}>
-          <Avatar.Image
-            size={40}
-            source={{ uri: profilePictureUrl }}
-          />
-          
+          <Avatar.Image size={40} source={{ uri: profilePictureUrl }} />
+
           <View style={styles.cardText}>
-            <Text style={styles.cardTitle}>{otherUserName || 'Unknown'}</Text>
+            <Text style={styles.cardTitle}>{otherUserName || "Unknown"}</Text>
             <Text style={styles.cardSubtitle}>
-              {lastMessage.text} {lastMessage.timestamp ? `- Last message: ${formatTimestamp(lastMessage.timestamp)}` : ''}
+              {lastMessage.text}{" "}
+              {lastMessage.timestamp
+                ? `- Last message: ${formatTimestamp(lastMessage.timestamp)}`
+                : ""}
             </Text>
           </View>
-
         </View>
-
       </Card>
     );
   };
@@ -128,7 +130,9 @@ export default function DirectChatsScreen({ navigation }) {
         data={chats}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.emptyText}>No chats available</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No chats available</Text>
+        }
       />
     </View>
   );

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import { auth, fetchPublicAttributes } from "../firebaseConfig";
 import {
   Searchbar,
@@ -20,7 +26,9 @@ export default function ViewItemScreen({ navigation, route }) {
   const [attributes, setAttributes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [designatedImage, setDesignatedImage] = useState(selectedItem.itemImages ? selectedItem.itemImages[0] : null);
+  const [designatedImage, setDesignatedImage] = useState(
+    selectedItem.itemImages ? selectedItem.itemImages[0] : null
+  );
 
   useEffect(() => {
     const getItemData = async () => {
@@ -36,11 +44,11 @@ export default function ViewItemScreen({ navigation, route }) {
             selectedCatalog.publicCatalogId,
             selectedItem.publicItemId
           );
-          console.log('Fetched attributes:', attributeData);
+          console.log("Fetched attributes:", attributeData);
           setAttributes(attributeData || []);
-          
+
           // Log selected item details
-          console.log('Selected item details:', selectedItem);
+          console.log("Selected item details:", selectedItem);
         } else {
           console.log("User is not authenticated");
         }
@@ -89,16 +97,19 @@ export default function ViewItemScreen({ navigation, route }) {
           {selectedItem.itemName}
         </Text>
         {designatedImage && (
-          <Image source={{ uri: designatedImage }} style={styles.designatedImage} />
+          <Image
+            source={{ uri: designatedImage }}
+            style={styles.designatedImage}
+          />
         )}
         <View style={styles.imagesContainer}>
           {selectedItem.itemImages && selectedItem.itemImages.length > 0 ? (
             selectedItem.itemImages.map((image, index) => (
-              <TouchableOpacity key={index} onPress={() => setDesignatedImage(image)}>
-                <Image
-                  source={{ uri: image }}
-                  style={styles.itemImage}
-                />
+              <TouchableOpacity
+                key={index}
+                onPress={() => setDesignatedImage(image)}
+              >
+                <Image source={{ uri: image }} style={styles.itemImage} />
               </TouchableOpacity>
             ))
           ) : (
@@ -108,7 +119,7 @@ export default function ViewItemScreen({ navigation, route }) {
         <View style={styles.attributesContainer}>
           {attributes && attributes.length > 0 ? (
             attributes.map((attr) => (
-              <View key={attr.id} style={styles.attributeRow}>
+              <View key={attr.publicAttributeId} style={styles.attributeRow}>
                 <Text style={styles.attributeName}>{attr.attributeName}</Text>
                 <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
               </View>
@@ -137,7 +148,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   designatedImage: {
-    width: '100%',
+    width: "100%",
     height: 300,
     borderRadius: 5,
     marginBottom: 10,

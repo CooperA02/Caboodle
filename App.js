@@ -24,10 +24,11 @@ import ViewPublicItemScreen from "./Screens/viewPublicItemScreen";
 import EditAttributeScreen from "./Screens/editAttributeScreen";
 import editCatalogScreen from "./Screens/editCatalogScreen";
 import editItemScreen from "./Screens/editItemScreen";
-import AccessibilityScreen from './Screens/accessibilityScreen';
+import AccessibilityScreen from "./Screens/accessibilityScreen";
 import UserChatsScreen from "./Screens/userChatScreen";
 import GlobalChatScreen from "./Screens/globalChatScreen";
 import DirectChatsScreen from "./Screens/directChatScreen";
+import UserNewsFeedFiltered from "./Screens/userNewsFeedFiltered";
 import {
   Provider as PaperProvider,
   adaptNavigationTheme,
@@ -35,8 +36,8 @@ import {
   MD3LightTheme,
 } from "react-native-paper";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
-import merge from 'deepmerge';
-import { PreferencesContext } from './Components/preferencesContext';
+import merge from "deepmerge";
+import { PreferencesContext } from "./Components/preferencesContext";
 
 const Tab = createMaterialBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -132,10 +133,9 @@ function MyTabs() {
   );
 }
 
-
 export default function App() {
   const [isThemeDark, setIsThemeDark] = React.useState(false);
-  const [textSize, setTextSize] = useState('small');
+  const [textSize, setTextSize] = useState("small");
   let theme = isThemeDark ? CombinedDarkTheme : CombinedDefaultTheme;
 
   const toggleTheme = React.useCallback(() => {
@@ -143,8 +143,12 @@ export default function App() {
   }, [isThemeDark]);
 
   const toggleTextSize = useCallback(() => {
-    setTextSize(prevTextSize => 
-      prevTextSize === 'small' ? 'medium' : prevTextSize === 'medium' ? 'large' : 'small'
+    setTextSize((prevTextSize) =>
+      prevTextSize === "small"
+        ? "medium"
+        : prevTextSize === "medium"
+        ? "large"
+        : "small"
     );
   }, []);
 
@@ -157,114 +161,119 @@ export default function App() {
   );
   return (
     <PreferencesContext.Provider value={preferences}>
-    <PaperProvider theme={theme}>
-      <NavigationContainer theme={theme}>
-        <Stack.Navigator
-          initialRouteName="SignUp"
-          listeners={({ state }) => ({
-            focus: (event) => {
-              // If the focused route is the MainApp show the AppBar, if not hide the AppBar to prevent it showing on the login screen. A rare first attempt W.
-              if (state.routes[state.index].name === "MainApp") {
-                event.target.setHeaderVisible(true);
-              } else {
-                event.target.setHeaderVisible(false);
-              }
-            },
-          })}
-        >
-          <Stack.Screen
-            name="Create Attribute"
-            component={createAttributeScreen}
-            options={{ headerShown: false }} // Hide header
-          />
-          <Stack.Screen
-            name="Create Catalog"
-            component={CreateCatalogScreen}
-            options={{ headerShown: false }} // Hide header
-          />
-          <Stack.Screen
-            name="New Item"
-            component={CreateItemScreen}
-            options={{ headerShown: false }} // Hide header
-          />
-          <Stack.Screen
-            name="SignUp"
-            component={SignUpScreen}
-            options={{ headerShown: false }} // if it ain't broke... ctrl+c
-          />
-          <Stack.Screen
-            name="User Home"
-            component={UserHomeScreen}
-            options={{ headerShown: false }} // Hide header
-          />
-          <Stack.Screen
-            name="Profile"
-            component={UserProfileScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="View Catalog"
-            component={ViewCatalogScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="View Item"
-            component={viewItemScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="MainApp"
-            component={MyTabs}
-            options={{ headerShown: false }} // Hide header
-          />
-          <Stack.Screen
-            name="View Public Catalog"
-            component={ViewPublicCatalogScreen}
-            options={{ headerShown: true }} 
-          />
-          <Stack.Screen
-            name="View Public Item"
-            component={ViewPublicItemScreen}
-            options={{ headerShown: true }} 
-          />
-          <Stack.Screen
-            name="Accessibility"
-            component={AccessibilityScreen}
-            options={{ headerShown: true }} 
-          />
-                    <Stack.Screen
-            name="UserChatScreen"
-            component={UserChatsScreen}
-            options={{ headerTitle: '' }} // Hide header
-          />
-          <Stack.Screen
-            name="GlobalChat"
-            component={GlobalChatScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="DirectChat"
-            component={DirectChatsScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="Edit Attribute"
-            component={EditAttributeScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="Edit Catalog"
-            component={editCatalogScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-          <Stack.Screen
-            name="Edit Item"
-            component={editItemScreen}
-            options={{ headerShown: true }} // Hide header
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </PaperProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer theme={theme}>
+          <Stack.Navigator
+            initialRouteName="SignUp"
+            listeners={({ state }) => ({
+              focus: (event) => {
+                // If the focused route is the MainApp show the AppBar, if not hide the AppBar to prevent it showing on the login screen. A rare first attempt W.
+                if (state.routes[state.index].name === "MainApp") {
+                  event.target.setHeaderVisible(true);
+                } else {
+                  event.target.setHeaderVisible(false);
+                }
+              },
+            })}
+          >
+            <Stack.Screen
+              name="Create Attribute"
+              component={createAttributeScreen}
+              options={{ headerShown: false }} // Hide header
+            />
+            <Stack.Screen
+              name="Create Catalog"
+              component={CreateCatalogScreen}
+              options={{ headerShown: false }} // Hide header
+            />
+            <Stack.Screen
+              name="New Item"
+              component={CreateItemScreen}
+              options={{ headerShown: false }} // Hide header
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignUpScreen}
+              options={{ headerShown: false }} // if it ain't broke... ctrl+c
+            />
+            <Stack.Screen
+              name="User Home"
+              component={UserHomeScreen}
+              options={{ headerShown: false }} // Hide header
+            />
+            <Stack.Screen
+              name="Profile"
+              component={UserProfileScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="View Catalog"
+              component={ViewCatalogScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="View Item"
+              component={viewItemScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="MainApp"
+              component={MyTabs}
+              options={{ headerShown: false }} // Hide header
+            />
+            <Stack.Screen
+              name="View Public Catalog"
+              component={ViewPublicCatalogScreen}
+              options={{ headerShown: true }}
+            />
+            <Stack.Screen
+              name="View Public Item"
+              component={ViewPublicItemScreen}
+              options={{ headerShown: true }}
+            />
+            <Stack.Screen
+              name="Accessibility"
+              component={AccessibilityScreen}
+              options={{ headerShown: true }}
+            />
+            <Stack.Screen
+              name="UserChatScreen"
+              component={UserChatsScreen}
+              options={{ headerTitle: "" }} // Hide header
+            />
+            <Stack.Screen
+              name="GlobalChat"
+              component={GlobalChatScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="DirectChat"
+              component={DirectChatsScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="Edit Attribute"
+              component={EditAttributeScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="Edit Catalog"
+              component={editCatalogScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="Edit Item"
+              component={editItemScreen}
+              options={{ headerShown: true }} // Hide header
+            />
+            <Stack.Screen
+              name="News Feed Filtered"
+              component={UserNewsFeedFiltered}
+              options={{ headerShown: true }} // Hide header
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
     </PreferencesContext.Provider>
   );
 }
