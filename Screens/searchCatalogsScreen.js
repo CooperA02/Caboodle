@@ -53,11 +53,6 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     });
   };
 
-  const handleSortByViews = () => {
-    const sortedCatalogs = [...catalogs].sort((a, b) => b.views - a.views);
-    setCatalogs(sortedCatalogs);
-    setIsMenuVisible(false);
-  };
 
   const handleSortAlphabetically = () => {
     const sortedCatalogs = [...catalogs].sort((a, b) =>
@@ -67,22 +62,10 @@ export default function SearchCatalogsScreen({ navigation, route }) {
     setIsMenuVisible(false);
   };
 
-  const handleSortByCreationDate = () => {
-    const sortedCatalogs = [...catalogs].sort((a, b) => {
-      const dateA = new Date(a.createdAt.toDate());
-      const dateB = new Date(b.createdAt.toDate());
-      return dateB - dateA; // Descending order
-    });
-    setCatalogs(sortedCatalogs);
-    setIsMenuVisible(false);
-  };
-  
-  const handleSortByModificationDate = () => {
-    const sortedCatalogs = [...catalogs].sort((a, b) => {
-      const dateA = new Date(a.updatedAt.toDate());
-      const dateB = new Date(b.updatedAt.toDate());
-      return dateB - dateA; // Descending order
-    });
+  const handleSortReverseAlphabetically = () => {
+    const sortedCatalogs = [...catalogs].sort((a, b) =>
+      b.catalogName.localeCompare(a.catalogName)
+    );
     setCatalogs(sortedCatalogs);
     setIsMenuVisible(false);
   };
@@ -90,17 +73,15 @@ export default function SearchCatalogsScreen({ navigation, route }) {
 
   return (
     <>
-      <PaperProvider>
+
         <Appbar.Header>
           <Menu
             visible={visible}
             onDismiss={closeMenu}
             anchor={<Button icon="sort" onPress={openMenu} />}
           >
-            <Menu.Item onPress={handleSortByViews} title="Popularity" />
             <Menu.Item onPress={handleSortAlphabetically} title="Name (A-Z)" />
-            <Menu.Item onPress={handleSortByCreationDate} title="Newest" />
-            <Menu.Item onPress={handleSortByModificationDate} title="Recently Modified" />
+            <Menu.Item onPress={handleSortReverseAlphabetically} title="Name (Z-A)" />
           </Menu>
           <Appbar.Content title="Caboodle" />
           <Appbar.Action icon="account-outline" onPress={() => navigation.navigate('Profile')} />
@@ -163,7 +144,7 @@ export default function SearchCatalogsScreen({ navigation, route }) {
           )}
         </View>
       </TouchableWithoutFeedback>
-      </PaperProvider>
+
     </>
   );
 }
