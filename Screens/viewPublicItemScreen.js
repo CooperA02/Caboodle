@@ -27,7 +27,7 @@ export default function ViewItemScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [designatedImage, setDesignatedImage] = useState(
-    selectedItem.itemImages ? selectedItem.itemImages[0] : null
+    selectedItem.images ? selectedItem.images[0] : null
   );
 
   useEffect(() => {
@@ -103,8 +103,8 @@ export default function ViewItemScreen({ navigation, route }) {
           />
         )}
         <View style={styles.imagesContainer}>
-          {selectedItem.itemImages && selectedItem.itemImages.length > 0 ? (
-            selectedItem.itemImages.map((image, index) => (
+          {selectedItem.images && selectedItem.images.length > 0 ? (
+            selectedItem.images.map((image, index) => (
               <TouchableOpacity
                 key={index}
                 onPress={() => setDesignatedImage(image)}

@@ -22,7 +22,9 @@ export default function ViewCatalogScreen({ navigation, route }) {
 
   const userId = auth.currentUser.uid;
   const catalogId = selectedCatalog.id;
-  const pubCatalogId = selectedCatalog.pubCatalogId;
+  const publicCatalogId = selectedCatalog.publicId;
+
+
 
   useEffect(() => {
     const getItemData = async () => {
@@ -102,7 +104,7 @@ export default function ViewCatalogScreen({ navigation, route }) {
                   item: item,
                   userId: userId,
                   catalogId: catalogId,
-                  publicCatalogId: pubCatalogId,
+                  publicCatalogId: publicCatalogId,
                 })
               }
               style={styles.itemRow}

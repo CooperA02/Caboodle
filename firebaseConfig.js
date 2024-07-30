@@ -225,6 +225,104 @@ const deleteCatalogs = async (userId, catalogId) => {
   }
 };
 
+const updateCatalogImage = async (userId, catalogId, publicCatalogId, imageUri) => {
+  if (!imageUri || !userId || !catalogId) {
+    throw new Error('Image URI, User ID, and Catalog ID are required.');
+  }
+
+  let currentDate = new Date().toISOString();
+  console.log("Current Date:", currentDate);
+
+  const filename = `users/${userId}/${catalogId}/${new Date().toISOString()}.jpg`;
+  const pubfilename = `publicCatalogs/${publicCatalogId}/${new Date().toISOString()}.jpg`;
+
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, filename);
+    const pubstorageRef = ref(storage, pubfilename);
+
+    // Convert local file path to blob
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    // Upload the blob to Firebase Storage
+    await uploadBytes(storageRef, blob);
+    await uploadBytes(pubstorageRef, blob);
+
+    // Retrieve the download URL
+    const downloadURL = await getDownloadURL(storageRef);
+    const pubdownloadURL = await getDownloadURL(pubstorageRef);
+    console.log("Download URL from Firebase Storage:", downloadURL);
+
+    // Update private catalog image
+    const privateCatRef = doc(firestore, "users", userId, "catalogs", catalogId);
+    await updateDoc(privateCatRef, { images: [downloadURL] });
+
+    console.log("Private Catalog image successfully updated:", catalogId);
+
+    // Optionally update public catalog image if publicCatalogId is provided
+    if (publicCatalogId) {
+      const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
+      await updateDoc(publicCatRef, { catalogImages: [pubdownloadURL] });
+      console.log("Public Catalog image successfully updated:", publicCatalogId);
+    } else {
+      console.log("No public catalog ID provided, skipping public catalog update.");
+    }
+
+    return { url: downloadURL };
+  } catch (error) {
+    console.error('Error updating catalog image:', error.message);
+    throw new Error('Failed to update catalog image.');
+  }
+};
+
+
+
+
+const updateItemImage = async (userId, catalogId, publicCatalogId, itemId, publicItemId, itemUri) => {
+  if (!itemUri || !userId || !catalogId || !itemId) {
+    throw new Error('All parameters are required.');
+  }
+
+  console.log(`Generating filename with userId: ${userId}, catalogId: ${catalogId}, itemId: ${itemId}`);
+  console.log(`Generating publicFilename with publicCatalogId: ${publicCatalogId}, publicItemId: ${publicItemId}`);
+
+
+  const filename = `users/${userId}/${catalogId}/${itemId}/${new Date().toISOString()}.jpg`;
+  const pubFilename = `publicCatalogs/${publicCatalogId}/${publicItemId}/${new Date().toISOString()}.jpg`;
+
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, filename);
+    const pubStorageRef = ref(storage, pubFilename);
+
+    const response = await fetch(itemUri);
+    const blob = await response.blob();
+
+    await uploadBytes(storageRef, blob);
+    await uploadBytes(pubStorageRef, blob);
+
+    const downloadURL = await getDownloadURL(storageRef);
+    const pubDownloadURL = await getDownloadURL(pubStorageRef);
+
+    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    await updateDoc(itemRef, { images: [downloadURL] });
+
+    if (publicItemId) {
+      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+      await updateDoc(publicItemRef, { itemImages: [pubDownloadURL] });
+    } else {
+      console.log("No public Item ID provided, skipping public Item update.");
+    }
+
+    return { url: downloadURL };
+  } catch (error) {
+    console.error('Error updating item image:', error.message);
+    throw new Error('Failed to update item image.');
+  }
+};
+
+
 // Create Item
 const createItem = async (userId, catalogId, item, images) => {
   try {
@@ -570,7 +668,7 @@ const addToPublicItemList = async (userId, catalogId, pubCatalogId, itemId, item
         itemName: item.name,
         itemValue: item.value,
         itemDescription: item.description,
-        itemImages: imageUrls,
+        images: imageUrls,
         attributes: [ 
           { attributeName: "Value", attributeValue: item.value },
           { attributeName: "Description", attributeValue: item.description }
@@ -1085,4 +1183,6 @@ export {
   searchUsers, 
   fetchGlobalChat,
   addGlobalMessage,
+  updateCatalogImage,
+  updateItemImage
 };
