@@ -236,31 +236,39 @@ const updateCatalogImage = async (userId, catalogId, publicCatalogId, imageUri) 
     throw new Error('Image URI, User ID, and Catalog ID are required.');
   }
 
-  console.log("Download URL:", imageUri);
+  console.log("Local File Path:", imageUri);
 
-  const filename = `catalog_images/${userId}/${catalogId}/${new Date().toISOString()}.jpg`;
+  const filename = `users/${userId}/${catalogId}/${new Date().toISOString()}.jpg`;
+  const pubfilename = `publicCatalogs/${publicCatalogId}/${new Date().toISOString()}.jpg`;
 
   try {
     const storage = getStorage();
     const storageRef = ref(storage, filename);
+    const pubstorageRef = ref (storage)
 
+    // Convert local file path to blob
     const response = await fetch(imageUri);
     const blob = await response.blob();
 
+    // Upload the blob to Firebase Storage
     await uploadBytes(storageRef, blob);
+    await uploadBytes(pubstorageRef, blob);
 
+    // Retrieve the download URL
     const downloadURL = await getDownloadURL(storageRef);
+    const pubdownloadURL = await getDownloadURL(pubstorageRef);
+    console.log("Download URL from Firebase Storage:", downloadURL);
 
     // Update private catalog image
     const privateCatRef = doc(firestore, "users", userId, "catalogs", catalogId);
-    await updateDoc(privateCatRef, { images: [filename] }); // Replace the entire array with the new image URL
+    await updateDoc(privateCatRef, { images: [downloadURL] });
 
     console.log("Private Catalog image successfully updated:", catalogId);
 
     // Optionally update public catalog image if publicCatalogId is provided
     if (publicCatalogId) {
       const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
-      await updateDoc(publicCatRef, { images: [downloadURL] }); // Update image in public catalog
+      await updateDoc(publicCatRef, { catalogImages: [pubdownloadURL] });
       console.log("Public Catalog image successfully updated:", publicCatalogId);
     } else {
       console.log("No public catalog ID provided, skipping public catalog update.");
@@ -272,6 +280,7 @@ const updateCatalogImage = async (userId, catalogId, publicCatalogId, imageUri) 
     throw new Error('Failed to update catalog image.');
   }
 };
+
 
 
 // Create Item

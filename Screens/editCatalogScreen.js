@@ -11,15 +11,9 @@ export default function EditCatalogScreen({ route, navigation }) {
   const [hasSelectedNewImage, setHasSelectedNewImage] = useState(false);
 
   const handleSubmit = async () => {
-    console.log("URL at begining of submit:", imageUri);
     try {
-      await updateCatalogName(userId, catalog.id, catalog.publicId, name);
-      
-      if (hasSelectedNewImage) {
-        console.log("URL before updateCatalogImage:", imageUri);
-        await updateCatalogImage(userId, catalog.id, catalog.publicId, imageUri); // Update image in Firebase
-      }
-      
+      console.log("URL before updateCatalogImage:", imageUri);
+      await updateCatalogImage(userId, catalog.id, catalog.publicId, imageUri); // Update image in Firebase
       Alert.alert('Success', 'Catalog updated successfully');
       navigation.goBack();
     } catch (error) {
@@ -27,6 +21,7 @@ export default function EditCatalogScreen({ route, navigation }) {
       Alert.alert('Error', 'Failed to update Catalog', error.message);
     }
   };
+  
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
