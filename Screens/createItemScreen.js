@@ -5,115 +5,151 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import Header from "../Components/header";
-import {
-  Searchbar,
-  Avatar,
-  Button,
-  Card,
-  Chip,
-  IconButton,
-  Paragraph,
-  Text as RNPText,
-  Appbar,
-  Text,
-  TextInput,
-} from "react-native-paper";
-import {
-  auth,
-  createCatalog,
-  storage,
-  addToPublicCatalogList,
-  fetchUserData,
-  fetchCatalogs,
-} from "../firebaseConfig";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Text, Appbar, TextInput } from "react-native-paper";
+import { auth, createItem, addToPublicItemList } from "../firebaseConfig";
 
-export default function CreateCatalogScreen({ navigation }) {
-  const [catalogName, setCatalogName] = useState("");
-  const [catalogCategory, setCatalogCategory] = useState("");
-  const [catalogDescription, setCatalogDescription] = useState("");
+export default function CreateItemScreen({ navigation, route }) {
+  const { selectedCatalog } = route.params;
+  const [itemName, setItemName] = useState("");
+  const [itemValue, setItemValue] = useState("");
+  const [itemDescription, setItemDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
-  const [isPublic, setIsPrivate] = useState(false);
 
-  const uploadImageAsync = async (uri) => {
+  const handleCreateItem = async () => {
+    const newItem = {
+      name: itemName,
+      value: itemValue,
+      description: itemDescription,
+    };
+
     try {
-      const blob = await fetch(uri).then((response) => response.blob());
-      const storageRef = ref(
-        storage,
-        `users/${auth.currentUser.uid}/images/${Date.now()}`
-      );
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading image: ", error);
-      throw error;
-    }
-  };
-
-  const handleCreateCatalog = async () => {
-    try {
-      const imageUrls = await Promise.all(
-        selectedImages.map((uri) => uploadImageAsync(uri))
-      );
-
-      const newCatalog = {
-        name: catalogName,
-        category: catalogCategory,
-        description: catalogDescription,
-        images: imageUrls,
-        isPublic: isPublic,
-      };
-      try {
-        const catalogId = await createCatalog(auth.currentUser.uid, newCatalog);
-        if (isPublic) {
-          const userData = await fetchUserData(auth.currentUser.uid);
-          await addToPublicCatalogList(
-            auth.currentUser.uid,
-            userData.username,
-            newCatalog,
-            catalogId
-          );
-        }
-        navigation.navigate("My Catalogs", {});
-      } catch (e) {
-        console.error("Error saving catalog data: ", e);
+      if (selectedImages.length === 0) {
+        throw new Error("Please add at least one photo.");
       }
-    } catch (error) {
-      console.error("Error while creating catalog: ", error);
+
+      console.log(
+        "Creating item with data:",
+        newItem,
+        "and images:",
+        selectedImages
+      );
+
+      const itemId = await createItem(
+        auth.currentUser.uid,
+        selectedCatalog.id,
+        newItem,
+        selectedImages
+      );
+
+      console.log("Item created successfully.");
+
+      if (selectedCatalog.isPublic) {
+        await addToPublicItemList(
+          auth.currentUser.uid,
+          selectedCatalog.id,
+          selectedCatalog.publicId,
+          itemId,
+          newItem
+        );
+        console.log("Item added to public list.");
+      }
+
+      navigation.navigate("View Catalog", {
+        selectedCatalog: selectedCatalog,
+      });
+    } catch (e) {
+      console.error("Error saving item data: ", e);
+      alert("An error occurred while creating the item. Please try again.");
     }
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      alert("Sorry, we need camera permissions to make this work!");
-      return;
+    try {
+      const { status: cameraStatus } =
+        await ImagePicker.requestCameraPermissionsAsync();
+      const { status: mediaLibraryStatus } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (cameraStatus !== "granted" || mediaLibraryStatus !== "granted") {
+        alert(
+          "Sorry, we need camera and media library permissions to make this work!"
+        );
+        return;
+      }
+
+      Alert.alert(
+        "Add Photo",
+        "Choose an option",
+        [
+          { text: "Take Photo", onPress: () => openCamera() },
+          { text: "Choose from Library", onPress: () => openImageLibrary() },
+          { text: "Cancel", style: "cancel" },
+        ],
+        { cancelable: true }
+      );
+    } catch (e) {
+      console.error("Error requesting permissions: ", e);
+      alert(
+        "An error occurred while requesting permissions. Please try again."
+      );
     }
+  };
 
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  const openCamera = async () => {
+    try {
+      let result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.1, // Adjust quality to reduce size
+      });
 
-    if (!result.cancelled && result.assets && result.assets.length > 0) {
-      setSelectedImages([...selectedImages, result.assets[0].uri]);
+      if (!result.cancelled && result.assets) {
+        const imageUris = result.assets.map((asset) => asset.uri);
+        setSelectedImages((prevImages) => [...prevImages, ...imageUris]);
+      }
+    } catch (e) {
+      console.error("Error opening camera: ", e);
+      alert("An error occurred while opening the camera. Please try again.");
+    }
+  };
+
+  const openImageLibrary = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.1,
+      });
+
+      if (!result.cancelled && result.assets) {
+        const imageUris = result.assets.map((asset) => asset.uri);
+        setSelectedImages((prevImages) => [...prevImages, ...imageUris]);
+      }
+    } catch (e) {
+      console.error("Error opening image library: ", e);
+      alert(
+        "An error occurred while opening the image library. Please try again."
+      );
     }
   };
 
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title="Create New Catalog" />
+        <Appbar.Content title="Create New Item" />
       </Appbar.Header>
-      <View style={styles.container}>
-        <ScrollView style={styles.content}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.buttonWrapper}>
             <TouchableOpacity style={styles.addPhotoButton} onPress={pickImage}>
               <View style={{ alignItems: "center" }}>
@@ -132,39 +168,25 @@ export default function CreateCatalogScreen({ navigation }) {
             ))}
           </View>
           <TextInput
-            placeholder="Name Your Catalog"
-            value={catalogName}
-            onChangeText={setCatalogName}
-            style={[styles.input, { marginTop: 15 }]}
+            placeholder="Name of Item"
+            value={itemName}
+            onChangeText={setItemName}
+            style={[styles.input, { marginTop: 100 }]}
           />
           <TextInput
-            placeholder="Category"
-            value={catalogCategory}
-            onChangeText={setCatalogCategory}
+            placeholder="Value of Item"
+            value={itemValue}
+            onChangeText={setItemValue}
             style={styles.input}
           />
           <TextInput
-            mode="flat"
-            label="Describe The Catalog"
-            multiline
-            style={styles.fixedHeight}
-            value={catalogDescription}
-            onChangeText={setCatalogDescription}
+            placeholder="Description of Item"
+            value={itemDescription}
+            onChangeText={setItemDescription}
+            style={styles.descriptionInput}
+            multiline={true}
+            numberOfLines={4}
           />
-          <View style={styles.switchContainer}>
-            <Text style={styles.switchLabel}>Public Catalog</Text>
-            <TouchableOpacity
-              style={[
-                styles.switchButton,
-                isPublic ? styles.switchButtonOn : null,
-              ]}
-              onPress={() => setIsPrivate(!isPublic)}
-            >
-              <Text style={styles.switchButtonText}>
-                {isPublic ? "ON" : "OFF"}
-              </Text>
-            </TouchableOpacity>
-          </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.cancelButton}
@@ -174,17 +196,16 @@ export default function CreateCatalogScreen({ navigation }) {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.createButton}
-              onPress={handleCreateCatalog}
+              onPress={handleCreateItem}
             >
               <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

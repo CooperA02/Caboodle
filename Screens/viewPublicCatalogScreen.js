@@ -29,7 +29,7 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
           const itemData = await fetchPublicItems(
             route.params.selectedCatalog.publicCatalogId
           );
-          console.log("Fetched public items:", itemData); // Log the fetched items to verify itemImages
+          console.log("Fetched public items:", itemData); 
           setItems(itemData);
         } else {
           console.log(
@@ -137,10 +137,10 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
               onPress={() => handleNavigateToViewItemScreen(item.publicItemId)}
               style={styles.itemRow}
             >
-              {item.itemImages && item.itemImages.length > 0 && (
+              {item.images && item.images.length > 0 && (
                 <Image
-                  source={{ uri: item.itemImages[0] }}
-                  style={styles.itemImage}
+                  source={{ uri: item.images[0] }}
+                  style={styles.image}
                 />
               )}
               <View style={styles.itemDetails}>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
-  itemImage: {
+  image: {
     width: 50,
     height: 50,
     marginRight: 10,
