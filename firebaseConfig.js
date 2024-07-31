@@ -874,11 +874,11 @@ const updateAttribute = async (userId, catalogId, publicCatalogId, itemId, publi
 const updateCatalogName = async (userId, catalogId, publicCatalogId, newName) => {
   try {
     const privateCatRef = doc(firestore, "users", userId, "catalogs", catalogId);
-    await updateDoc(privateCatRef, { name: newName });
+    await updateDoc(privateCatRef, { catalogName: newName });
 
     if (publicCatalogId) {
       const publicCatRef = doc(firestore, "publicCatalogs", publicCatalogId);
-      await updateDoc(publicCatRef, { name: newName });
+      await updateDoc(publicCatRef, { catalogName: newName });
       console.log("Public Catalog successfully updated:", publicCatalogId);
     } else {
       console.log("No public catalog ID provided, skipping public catalog update.");
