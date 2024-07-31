@@ -899,7 +899,7 @@ const updateItemName = async (userId, catalogId, publicCatalogId, itemId, public
 
     if (publicCatalogId && publicItemId) {
       const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
-      await updateDoc(publicItemRef, { name: newName});
+      await updateDoc(publicItemRef, { itemName: newName});
       console.log("Public Item successfully updated:", itemId);
     } else {
       console.log("No public item ID provided, skipping public Item update.");
