@@ -64,6 +64,7 @@ export default function EditItemScreen({ route, navigation }) {
         placeholder="Enter new item name"
         value={name}
         onChangeText={setName}
+        style={{ marginBottom: 50 }}
       />
       <Button title="Update Item" onPress={handleSubmit} />
       <Button title="Delete Item" color="red" onPress={handleDelete} />
