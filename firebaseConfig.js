@@ -859,7 +859,7 @@ const updateAttribute = async (userId, catalogId, publicCatalogId, itemId, publi
 
     if (publicCatalogId && publicItemId) {
       const publicAttrRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId, "publicAttributes", publicAttributeId);
-      await updateDoc(publicAttrRef, { name: newName, value: newValue });
+      await updateDoc(publicAttrRef, { attributeName: newName, attributeValue: newValue });
     } else {
       console.log("No public catalog/item ID provided, skipping public attribute update.");
     }
