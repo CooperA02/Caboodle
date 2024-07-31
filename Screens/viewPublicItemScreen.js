@@ -118,8 +118,8 @@ export default function ViewItemScreen({ navigation, route }) {
         </View>
         <View style={styles.attributesContainer}>
           {attributes && attributes.length > 0 ? (
-            attributes.map((attr) => (
-              <View key={attr.publicAttributeId} style={styles.attributeRow}>
+            attributes.map((attr, index) => (
+              <View key={index} style={styles.attributeRow}>
                 <Text style={styles.attributeName}>{attr.attributeName}</Text>
                 <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
               </View>
