@@ -5,6 +5,8 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Modal,
+  Dimensions,
 } from "react-native";
 import { auth, fetchPublicAttributes } from "../firebaseConfig";
 import {
@@ -27,8 +29,13 @@ export default function ViewItemScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [designatedImage, setDesignatedImage] = useState(
-    selectedItem.images ? selectedItem.images[0] : null
+    selectedItem.images && selectedItem.images.length > 0
+      ? selectedItem.images[0]
+      : selectedItem.itemImages && selectedItem.itemImages.length > 0
+      ? selectedItem.itemImages[0]
+      : null
   );
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const getItemData = async () => {
@@ -97,29 +104,38 @@ export default function ViewItemScreen({ navigation, route }) {
           {selectedItem.itemName}
         </Text>
         {designatedImage && (
-          <Image
-            source={{ uri: designatedImage }}
-            style={styles.designatedImage}
-          />
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Image
+              source={{ uri: designatedImage }}
+              style={styles.designatedImage}
+            />
+          </TouchableOpacity>
         )}
         <View style={styles.imagesContainer}>
-          {selectedItem.images && selectedItem.images.length > 0 ? (
-            selectedItem.images.map((image, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setDesignatedImage(image)}
-              >
-                <Image source={{ uri: image }} style={styles.itemImage} />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text>No images available.</Text>
-          )}
+          {selectedItem.images && selectedItem.images.length > 0
+            ? selectedItem.images.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setDesignatedImage(image)}
+                >
+                  <Image source={{ uri: image }} style={styles.itemImage} />
+                </TouchableOpacity>
+              ))
+            : selectedItem.itemImages &&
+              selectedItem.itemImages.length > 0 &&
+              selectedItem.itemImages.map((image, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => setDesignatedImage(image)}
+                >
+                  <Image source={{ uri: image }} style={styles.itemImage} />
+                </TouchableOpacity>
+              ))}
         </View>
         <View style={styles.attributesContainer}>
           {attributes && attributes.length > 0 ? (
-            attributes.map((attr) => (
-              <View key={attr.publicAttributeId} style={styles.attributeRow}>
+            attributes.map((attr, index) => (
+              <View key={index} style={styles.attributeRow}>
                 <Text style={styles.attributeName}>{attr.attributeName}</Text>
                 <Text style={styles.attributeValue}>{attr.attributeValue}</Text>
               </View>
@@ -129,6 +145,32 @@ export default function ViewItemScreen({ navigation, route }) {
           )}
         </View>
       </ScrollView>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={{ color: "white", fontSize: 18 }}>Close</Text>
+          </TouchableOpacity>
+          <ImageZoom
+            cropWidth={Dimensions.get("window").width}
+            cropHeight={Dimensions.get("window").height}
+            imageWidth={Dimensions.get("window").width}
+            imageHeight={Dimensions.get("window").width * 1.5} 
+          >
+            <Image
+              style={styles.fullScreenImage}
+              source={{ uri: designatedImage }}
+              resizeMode="contain"
+            />
+          </ImageZoom>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -182,38 +224,8 @@ const styles = StyleSheet.create({
   attributeValue: {
     fontSize: 18,
     color: "#888",
-    textAlign: "center",
-  },
-  topAttributeValue: {
-    paddingRight: 10,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 0,
-    marginBottom: 0,
-  },
-  addAttributeButton: {
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
-    marginLeft: 30,
-    marginBottom: 5,
-  },
-  imagesContainer: {
-    flexDirection: "row",
-    marginBottom: 50,
-  },
-  imageContainer: {
-    width: 100,
-    height: 100,
-    marginRight: 10,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 5,
+    textAlign: "right",
+    width: "66%",
   },
   modalContainer: {
     flex: 1,
@@ -222,8 +234,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   fullScreenImage: {
-    width: "90%",
-    height: "90%",
+    width: "100%",
+    height: "100%",
   },
   closeButton: {
     position: "absolute",

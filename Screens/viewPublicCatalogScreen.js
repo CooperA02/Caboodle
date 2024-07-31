@@ -13,8 +13,7 @@ import {
   createChat,
 } from "../firebaseConfig";
 import { Appbar, Button, Divider, List, Text } from "react-native-paper";
-import { AntDesign } from "@expo/vector-icons"; // Import icon components from Expo vector icons
-import { MaterialCommunityIcons } from "@expo/vector-icons"; // Import icon components from Expo vector icons
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
   const [selectedCatalog, setSelectedCatalog] = useState(null);
@@ -29,7 +28,7 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
           const itemData = await fetchPublicItems(
             route.params.selectedCatalog.publicCatalogId
           );
-          console.log("Fetched public items:", itemData); 
+          console.log("Fetched public items:", itemData);
           setItems(itemData);
         } else {
           console.log(
@@ -97,39 +96,34 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
   return (
     <>
       <Appbar.Header>
-        <Appbar.Content title={selectedCatalog.name} />
+        <Appbar.Content title={selectedCatalog.catalogName} />
       </Appbar.Header>
-      <View style={styles.buttonContainer}>
-        <Text style={styles.catalogName}>
-          Created By: {selectedCatalog.userName}
-        </Text>
-
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("News Feed Filtered", {
-              user: selectedCatalog.userId,
-            })
-          } // Navigate to the UserNewsFeedFilteredScreen
-          style={styles.profileButton}
-        >
-          <AntDesign name="user" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleChatWithUser(selectedCatalog)}
-          style={styles.profileButton}
-        >
-          <MaterialCommunityIcons name="chat" color="black" size={26} />
-        </TouchableOpacity>
+      <View style={styles.headerContainer}>
+        <Text style={styles.catalogName}>Owner: {selectedCatalog.userName}</Text>
+        <View style={styles.iconsContainer}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("News Feed Filtered", {
+                user: selectedCatalog.userId,
+              })
+            }
+          >
+            <AntDesign name="user" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleChatWithUser(selectedCatalog)}
+          >
+            <MaterialCommunityIcons name="chat" color="black" size={26} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <Text style={styles.catalogName}>
-        Description: {selectedCatalog.catalogDescription}
-      </Text>
+      <Text style={styles.catalogDescription}>Description: {selectedCatalog.catalogDescription}</Text>
       <ScrollView style={styles.itemsContainer}>
         <List.Section>
-          <View style={styles.itemDetails}>
-            <Text style={styles.itemName}>Item</Text>
-            <Text style={styles.itemName}>Value</Text>
-            <Text style={styles.itemName}>Description</Text>
+          <View style={styles.itemDetailsHeader}>
+            <Text style={styles.itemNameHeader}>Item</Text>
+            <Text style={styles.itemValueHeader}>Value</Text>
+            <Text style={styles.itemDescriptionHeader}>Description</Text>
           </View>
           {items.map((item) => (
             <TouchableOpacity
@@ -137,16 +131,21 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
               onPress={() => handleNavigateToViewItemScreen(item.publicItemId)}
               style={styles.itemRow}
             >
-              {item.images && item.images.length > 0 && (
+              {item.images && item.images.length > 0 ? (
                 <Image
                   source={{ uri: item.images[0] }}
                   style={styles.image}
                 />
-              )}
+              ) : item.itemImages && item.itemImages.length > 0 ? (
+                <Image
+                  source={{ uri: item.itemImages[0] }}
+                  style={styles.image}
+                />
+              ) : null}
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.itemName}</Text>
-                <Text style={styles.itemName}>{item.itemValue}</Text>
-                <Text style={styles.itemName}>{item.itemDescription}</Text>
+                <Text style={styles.itemValue}>{item.itemValue}</Text>
+                <Text style={styles.itemDescription}>{item.itemDescription}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -157,13 +156,26 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 20,
-    marginTop: 40,
   },
   catalogName: {
-    fontSize: 24,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  iconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 25,
+    gap: 40,
+  },
+  catalogDescription: {
+    fontSize: 14,
+    color: "#666",
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
   itemsContainer: {
@@ -178,8 +190,35 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 50,
-    height: 50,
+    height: 75,
     marginRight: 10,
+    marginLeft: 10,
+  },
+  itemDetailsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  itemNameHeader: {
+    fontSize: 16,
+    fontWeight: "bold",
+    flex: 1,
+    paddingLeft: 70,
+  },
+  itemValueHeader: {
+    fontSize: 16,
+    fontWeight: "bold",
+    flex: 1,
+    textAlign: "center",
+    paddingRight: 0,
+  },
+  itemDescriptionHeader: {
+    fontSize: 16,
+    fontWeight: "bold",
+    flex: 2,
+    textAlign: "center",
+    paddingRight: 10,
   },
   itemDetails: {
     flex: 1,
@@ -188,37 +227,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   itemName: {
-    fontSize: 18,
+    fontSize: 15,
     flex: 1,
+    textAlign: "left",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  itemValue: {
+    fontSize: 16,
+    flex: 1,
+    textAlign: "center",
   },
-  addButton: {
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
-  },
-  goBackButton: {
-    alignSelf: "flex-start",
-    marginBottom: 20,
-  },
-  goBackButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#007bff",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  profileButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "gray",
-    padding: 10,
-    marginLeft: 10,
+  itemDescription: {
+    fontSize: 14,
+    flex: 2,
+    color: "#666",
+    textAlign: "left",
   },
 });
