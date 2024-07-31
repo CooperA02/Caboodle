@@ -12,12 +12,14 @@ import {
   fetchChats,
   createChat,
 } from "../firebaseConfig";
-import { Appbar, Button, Divider, List, Text } from "react-native-paper";
+import { Appbar, List, Text } from "react-native-paper";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function ViewPublicCatalogScreen({ navigation, route }) {
   const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [items, setItems] = useState([]);
+  const [sortCriteria, setSortCriteria] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
 
   useEffect(() => {
     const getItemData = async () => {
@@ -93,6 +95,40 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
     });
   };
 
+  const parseValue = (value) => {
+    if (typeof value === "string") {
+
+      const numericValue = parseFloat(value.replace(/[$,]/g, ""));
+      
+      return isNaN(numericValue) ? Number.NEGATIVE_INFINITY : numericValue;
+    }
+    
+    return value;
+  };
+
+  const handleSort = (criteria) => {
+    let order = "asc";
+    if (sortCriteria === criteria && sortOrder === "asc") {
+      order = "desc";
+    }
+    setSortCriteria(criteria);
+    setSortOrder(order);
+
+    const sortedItems = [...items].sort((a, b) => {
+      if (criteria === "itemName") {
+        return order === "asc"
+          ? a.itemName.localeCompare(b.itemName)
+          : b.itemName.localeCompare(a.itemName);
+      } else if (criteria === "itemValue") {
+        const aValue = parseValue(a.itemValue);
+        const bValue = parseValue(b.itemValue);
+        return order === "asc" ? aValue - bValue : bValue - aValue;
+      }
+    });
+
+    setItems(sortedItems);
+  };
+
   return (
     <>
       <Appbar.Header>
@@ -121,8 +157,16 @@ export default function ViewPublicCatalogScreen({ navigation, route }) {
       <ScrollView style={styles.itemsContainer}>
         <List.Section>
           <View style={styles.itemDetailsHeader}>
-            <Text style={styles.itemNameHeader}>Item</Text>
-            <Text style={styles.itemValueHeader}>Value</Text>
+            <TouchableOpacity onPress={() => handleSort("itemName")}>
+              <Text style={styles.itemNameHeader}>
+                Item {sortCriteria === "itemName" && (sortOrder === "asc" ? "↑" : "↓")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleSort("itemValue")}>
+              <Text style={styles.itemValueHeader}>
+                Value {sortCriteria === "itemValue" && (sortOrder === "asc" ? "↑" : "↓")}
+              </Text>
+            </TouchableOpacity>
             <Text style={styles.itemDescriptionHeader}>Description</Text>
           </View>
           {items.map((item) => (
@@ -211,7 +255,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
-    paddingRight: 0,
+    marginLeft: 50,
   },
   itemDescriptionHeader: {
     fontSize: 16,
