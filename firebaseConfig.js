@@ -912,43 +912,108 @@ const updateItemName = async (userId, catalogId, publicCatalogId, itemId, public
   }
 };
 
-const updateItemDescription = async (userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, newValue) => {
-  try {
-    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
-    await updateDoc(privateAttrRef, { value: newValue });
 
-    if (publicCatalogId && publicItemId) {
-      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
-      await updateDoc(publicItemRef, { itemDescription: newValue });
-    } else {
-      console.log("No public catalog/item ID provided, skipping public item update.");
+const validateItemDescription = (value) => {
+  if (typeof value !== 'string') {
+    console.error("validateItemDescription: value is not a string:", value);
+    return false;
+  }
+  // Allow all characters
+  const descriptionRegex = /^.*$/;
+  return descriptionRegex.test(value);
+};
+
+const updateItemDescription = async (userId, catalogId, publicCatalogId, itemId, publicItemId, newDescription) => {
+  console.log("updateItemDescription called with:", userId, catalogId, publicCatalogId, itemId, publicItemId, newDescription);
+
+  try {
+    // Ensure new value is a string to mitigate errors
+    const newDescriptionString = String(newDescription).trim();
+    console.log("Trimmed description string:", newDescriptionString);
+
+    if (typeof newDescriptionString !== 'string') {
+      console.error("newDescription is not a string:", newDescription);
+      throw new Error("Invalid newDescription: not a string");
     }
 
-    console.log("Item description successfully updated:", itemId);
+    if (!validateItemDescription(newDescriptionString)) {
+      throw new Error("Invalid item description format");
+    }
+
+    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemDoc = await getDoc(itemRef);
+
+    if (itemDoc.exists()) {
+      const itemData = itemDoc.data();
+      console.log("Current item data before update:", itemData);
+
+      console.log("Updating private item description with:", newDescriptionString);
+      await updateDoc(itemRef, { description: newDescriptionString });
+
+      if (publicCatalogId && publicItemId) {
+        const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+        console.log("Updating public item description with:", newDescriptionString);
+        await updateDoc(publicItemRef, { itemDescription: newDescriptionString });
+      }
+
+      const updatedItemDoc = await getDoc(itemRef);
+      console.log("Updated item data after update:", updatedItemDoc.data());
+
+      console.log("Item description successfully updated:", itemId);
+    } else {
+      throw new Error("Item document not found");
+    }
   } catch (error) {
     console.error("Error updating item description:", error.message);
     throw error;
   }
 };
 
-const updateItemValue = async (userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, newValue) => {
-  try {
-    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
-    await updateDoc(privateAttrRef, { value: newValue });
 
-    if (publicCatalogId && publicItemId) {
-      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
-      await updateDoc(publicItemRef, { itemValue: newValue });
-    } else {
-      console.log("No public catalog/item ID provided, skipping public item update.");
+
+
+const validateItemValue = (value) => {
+  const valueRegex = /^[A-Za-z0-9$]*$/;
+  return valueRegex.test(value);
+};
+
+const updateItemValue = async (userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, newValue) => {
+  console.log("updateItemValue called with:", userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, newValue);
+
+  try {
+    // ensure new value is a string to mitigate errors
+    const newValueString = String(newValue).trim();
+
+    if (typeof newValueString !== 'string') {
+      console.error("newValue is not a string:", newValue);
+      throw new Error("Invalid newValue: not a string");
     }
 
-    console.log("Item value successfully updated:", itemId);
+    if (!validateItemValue(newValueString)) {
+      throw new Error("Invalid item value format");
+    }
+
+    const itemRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId);
+    const itemDoc = await getDoc(itemRef);
+
+    if (itemDoc.exists()) {
+      await updateDoc(itemRef, { value: newValueString });
+
+          if (publicCatalogId && publicItemId) {
+              const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+              await updateDoc(publicItemRef, { itemValue: newValue });
+          }
+
+          console.log("Item value successfully updated:", itemId);
+      } else {
+          throw new Error("Item document not found");
+      }
   } catch (error) {
-    console.error("Error updating item value:", error.message);
-    throw error;
+      console.error("Error updating item value:", error.message);
+      throw error;
   }
 };
+
 
 
 
