@@ -194,45 +194,47 @@ export default function ViewItemScreen({ navigation, route }) {
         ))}
       </ScrollView>
       <ScrollView style={styles.attributesContainer}>
-        {/* Hardcoded Attributes */}
-        <View style={styles.attributeRow}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Edit Attribute", {
-                attribute: { id: 1, name: "Value", value: selectedItem.value },
-                userId: userId,
-                catalogId: catalogId,
-                itemId: itemId,
-              })
-            }
-          >
-            <Text style={styles.attributeName}>Value</Text>
-            <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-              {selectedItem.value}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.attributeRow}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Edit Attribute", {
-                attribute: {
-                  id: 2,
-                  name: "Description",
-                  value: selectedItem.description,
-                },
-                userId: userId,
-                catalogId: catalogId,
-                itemId: itemId,
-              })
-            }
-          >
-            <Text style={styles.attributeName}>Description</Text>
-            <Text style={[styles.attributeValue, styles.topAttributeValue]}>
-              {selectedItem.description}
-            </Text>
-          </TouchableOpacity>
-        </View>
+  {/* Hardcoded Attributes */}
+  <View style={styles.attributeRow}>
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("Edit Attribute", {
+          attribute: { id: 1, name: "Value", value: selectedItem.value },
+          userId: userId,
+          catalogId: catalogId,
+          itemId: itemId,
+          pubCatalogId: pubCatalogId,
+          pubItemId: pubItemId,
+          isValue: true, // New flag to distinguish value updates
+        })
+      }
+    >
+      <Text style={styles.attributeName}>Value</Text>
+      <Text style={[styles.attributeValue, styles.topAttributeValue]}>
+        {selectedItem.value}
+      </Text>
+    </TouchableOpacity>
+  </View>
+  <View style={styles.attributeRow}>
+    <TouchableOpacity
+      onPress={() =>
+        navigation.navigate("Edit Attribute", {
+          attribute: { id: 2, name: "Description", value: selectedItem.description },
+          userId: userId,
+          catalogId: catalogId,
+          itemId: itemId,
+          pubCatalogId: pubCatalogId,
+          pubItemId: pubItemId,
+          isDescription: true, // New flag to distinguish description updates
+        })
+      }
+    >
+      <Text style={styles.attributeName}>Description</Text>
+      <Text style={[styles.attributeValue, styles.topAttributeValue]}>
+        {selectedItem.description}
+      </Text>
+    </TouchableOpacity>
+  </View>
 
         {/* Dynamically Mapped Attributes */}
         {attributes.map((attr) => (

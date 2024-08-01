@@ -912,6 +912,45 @@ const updateItemName = async (userId, catalogId, publicCatalogId, itemId, public
   }
 };
 
+const updateItemDescription = async (userId, catalogId, publicCatalogId, itemId, publicItemId, newValue) => {
+  try {
+    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
+    await updateDoc(privateAttrRef, { value: newValue });
+
+    if (publicCatalogId && publicItemId) {
+      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+      await updateDoc(publicItemRef, { itemDescription: newValue });
+    } else {
+      console.log("No public catalog/item ID provided, skipping public item update.");
+    }
+
+    console.log("Item description successfully updated:", itemId);
+  } catch (error) {
+    console.error("Error updating item description:", error.message);
+    throw error;
+  }
+};
+
+const updateItemValue = async (userId, catalogId, publicCatalogId, itemId, publicItemId, newValue) => {
+  try {
+    const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
+    await updateDoc(privateAttrRef, { value: newValue });
+
+    if (publicCatalogId && publicItemId) {
+      const publicItemRef = doc(firestore, "publicCatalogs", publicCatalogId, "publicItems", publicItemId);
+      await updateDoc(publicItemRef, { itemValue: newValue });
+    } else {
+      console.log("No public catalog/item ID provided, skipping public item update.");
+    }
+
+    console.log("Item value successfully updated:", itemId);
+  } catch (error) {
+    console.error("Error updating item value:", error.message);
+    throw error;
+  }
+};
+
+
 
 export const testFunction = () => {
   console.log("Test function called");
@@ -1184,5 +1223,7 @@ export {
   fetchGlobalChat,
   addGlobalMessage,
   updateCatalogImage,
-  updateItemImage
+  updateItemImage,
+  updateItemDescription,
+  updateItemValue,
 };
