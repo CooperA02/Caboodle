@@ -931,7 +931,7 @@ const updateItemDescription = async (userId, catalogId, publicCatalogId, itemId,
   }
 };
 
-const updateItemValue = async (userId, catalogId, publicCatalogId, itemId, publicItemId, newValue) => {
+const updateItemValue = async (userId, catalogId, publicCatalogId, itemId, publicItemId, attributeId, newValue) => {
   try {
     const privateAttrRef = doc(firestore, "users", userId, "catalogs", catalogId, "items", itemId, "attributes", attributeId);
     await updateDoc(privateAttrRef, { value: newValue });
